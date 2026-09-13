@@ -10,7 +10,7 @@ void serial(GameBoy *gb, u8 val) {
 
 int main(int argc, char **argv) {
 	if (argc < 2) {
-		fprintf(stderr, "Give a path to the rom to run\n", basename(argv[0]));
+		fprintf(stderr, "Give a path to the rom to run\n");
 		return 1;
 	}
 
