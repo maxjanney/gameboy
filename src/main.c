@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
 
 	GameBoy gb = (GameBoy){ .serial_io = serial };
 	gb_init(&gb);
-	if (!gb_load_rom(&gb, argv[1])) {
+	if (gb_load_rom(&gb, argv[1])) {
 		fprintf(stderr, "Failed to load rom\n");
 		return 1;
 	}
