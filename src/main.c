@@ -24,6 +24,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
+	gb.serial_io = serial;
 	gb_init(&gb);
 	if (gb_load_rom(&gb, argv[1])) {
 		fprintf(stderr, "Failed to load rom\n");
