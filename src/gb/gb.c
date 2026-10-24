@@ -1,9 +1,4 @@
 void gb_init(GameBoy *gb) {
-    gb_reset(gb);
-}
-
-// init gameboy to state after running boot rom
-void gb_reset(GameBoy *gb) {
     gb->af = 0x01b0;
     gb->c = 0x13;
     gb->e = 0xd8;
@@ -35,6 +30,8 @@ close_file:
     fclose(f);
     return 1;
 }
+
+void gb_cpu_step(GameBoy *gb) {}
 
 void gb_free(GameBoy *gb) {
     if (!gb) return;

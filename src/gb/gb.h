@@ -28,10 +28,11 @@ struct GameBoy {
     SerialCallback serial_io;
 };
 
-void gb_init(GameBoy *gb);
-void gb_reset(GameBoy *gb);
-int gb_load_rom(GameBoy *gb, const char *rom_path);
-void gb_free(GameBoy *gb);
+void gb_init(GameBoy*);
+int gb_load_rom(GameBoy*, const char*);
+void gb_free(GameBoy*);
 
-void gb_mem_write(GameBoy *gb, u16 addr, u8 val);
-void gb_io_write(GameBoy *gb, u16 addr, u8 val);
+void gb_cpu_step(GameBoy*);
+
+void gb_mem_write(GameBoy*, u16, u8);
+void gb_io_write(GameBoy*, u16, u8);

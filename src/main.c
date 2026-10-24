@@ -4,8 +4,18 @@
 #include "base/base.c"
 #include "gb/gb.c"
 
+#define OUTPUT_SIZE 1024
+
+char serial_buf[OUTPUT_SIZE];
+size_t pos = 0;
+
+GameBoy gb;
+
 void serial(GameBoy *gb, u8 val) {
-	putchar(val);
+	if (pos < OUTPUT_SIZE - 1) {
+		serial_buf[pos++] = val;
+		serial_buf[pos] = '\0';
+	}
 }
 
 int main(int argc, char **argv) {
@@ -14,12 +24,18 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	GameBoy gb = (GameBoy){ .serial_io = serial };
 	gb_init(&gb);
 	if (gb_load_rom(&gb, argv[1])) {
 		fprintf(stderr, "Failed to load rom\n");
 		return 1;
 	}
 
+	u16 prev_pc = 0;
+	while (prev_pc != gb.pc) {
+		prev_pc = gb.pc;
+		gb_cpu_step(&gb);
+	}
+
+	printf("Test completed\n%s", serial_buf);
 	gb_free(&gb);
 }
