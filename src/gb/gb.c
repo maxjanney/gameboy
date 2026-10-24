@@ -31,6 +31,11 @@ close_file:
     return 1;
 }
 
+#define F_Z (1 << 7)
+#define F_N (1 << 6)
+#define F_H (1 << 5)
+#define F_C (1 << 4)
+
 #define todo_opcode() {                                                     \
     fprintf(stderr, "Unimplemented opcode encountered: 0x%02X\n", opcode);  \
     abort();                                                                \
@@ -49,6 +54,17 @@ close_file:
 #define ld_hl_r(r) {                    \
     gb_mem_write(gb, gb->hl, gb->r);    \
     return 2;                           \
+}
+
+#define add_r_r(r) {                            \
+    u16 res = gb->a + gb->r;                    \
+    u8 h = (gb->a & 0xf) + (gb->r & 0xf) > 0xf; \
+    gb->a = (u8)res;                            \
+    gb->f = ((gb->a == 0) << 7) | /* Z */       \
+            /* N = 0*/                          \
+            (h << 5) | /* H */                  \
+            ((res > 0xff) << 4) /* C */         \
+    return 1;                                   \
 }
 
 int gb_cpu_step(GameBoy *gb) {
@@ -118,6 +134,8 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x7d: ld_r_r(a, l);
     case 0x7e: ld_r_hl(a);
     case 0x7f: ld_r_r(a, a);
+
+    case 0x80: add_r_r();
     default: todo_opcode();
     }
 }
