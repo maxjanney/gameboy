@@ -4,4 +4,5 @@ set -eu
 
 cd $(dirname "$0")
 mkdir -p build
-gcc -o build/main src/main.c
+rm --force build/main
+gcc -o build/main -std=c99 -Wall -Wextra src/main.c

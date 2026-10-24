@@ -56,15 +56,27 @@ close_file:
     return 2;                           \
 }
 
-#define add_r_r(r) {                            \
+#define add_a_r(r) {                            \
     u16 res = gb->a + gb->r;                    \
     u8 h = (gb->a & 0xf) + (gb->r & 0xf) > 0xf; \
     gb->a = (u8)res;                            \
     gb->f = ((gb->a == 0) << 7) | /* Z */       \
             /* N = 0*/                          \
             (h << 5) | /* H */                  \
-            ((res > 0xff) << 4) /* C */         \
+            ((res > 0xff) << 4); /* C */        \
     return 1;                                   \
+}
+
+#define add_a_hl() {                            \
+    u8 val = gb_mem_read(gb, gb->hl);           \
+    u8 h = (gb->a & 0xf) + (val & 0xf) > 0xf;   \
+    u16 res = (u16)val + gb->a;                 \
+    gb->a = res;                                \
+    gb->f = ((gb->a == 0) << 7) | /* Z */       \
+            /* N = 0 */                         \
+            (h << 5) | /* H */                  \
+            ((res > 0xff) << 4); /* C */        \
+    return 2;                                   \
 }
 
 int gb_cpu_step(GameBoy *gb) {
@@ -135,7 +147,14 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x7e: ld_r_hl(a);
     case 0x7f: ld_r_r(a, a);
 
-    case 0x80: add_r_r();
+    case 0x80: add_a_r(b);
+    case 0x81: add_a_r(c);
+    case 0x82: add_a_r(d);
+    case 0x83: add_a_r(e);
+    case 0x84: add_a_r(h);
+    case 0x85: add_a_r(l);
+    case 0x86: add_a_hl();
+    case 0x87: add_a_r(a);
     default: todo_opcode();
     }
 }
