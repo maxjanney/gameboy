@@ -107,8 +107,7 @@ close_file:
 #define sub_a_r(r) {                                        \
     u8 c = gb->r > gb->a;                                   \
     u8 h = (((gb->a & 0xf) - (gb->r & 0xf)) & 0x10) != 0;   \
-    u16 res = gb->a - gb->r;                                \
-    gb->a = res;                                            \
+    gb->a -= gb->r;                                         \
     gb->f = ((gb-> a == 0) << 7) | /* Z */                  \
             FLAG_N | /* N = 1 */                            \
             (h << 5) | /* H */                              \
@@ -120,13 +119,12 @@ close_file:
     u8 val = gb_mem_read(gb, gb->hl);                   \
     u8 c = val > gb->a;                                 \
     u8 h = (((gb->a & 0xf) - (val & 0xf)) & 0x10) != 0; \
-    u16 res = gb->a - val;                              \
-    gb->a = res;                                        \
+    gb->a -= val;                                       \
     gb->f = ((gb-> a == 0) << 7) | /* Z */              \
             FLAG_N | /* N = 1 */                        \
             (h << 5) | /* H */                          \
             (c << 4); /* C */                           \
-    return 1;                                           \
+    return 2;                                           \
 }
 
 #define and_a_r(r) {                        \
@@ -136,10 +134,21 @@ close_file:
 }
 
 #define and_a_hl() {                        \
-    u8 val = gb_mem_read(gb, gb->hl);       \
-    gb->a &= val;                           \
+    gb->a &= gb_mem_read(gb, gb->hl);       \
     gb->f = ((gb->a == 0) << 7) | FLAG_H;   \
     return 2;                               \
+}
+
+#define xor_a_r(r) {            \
+    gb->a ^= gb->r;             \
+    gb->f = (gb->a == 0) << 7;  \
+    return 1;                   \
+}
+
+#define xor_a_hl(r) {                    \
+    gb->a ^= gb_mem_read(gb, gb->hl);   \
+    gb->f = (gb->a == 0) << 7;          \
+    return 2;                           \
 }
 
 #define or_a_r(r) {             \
@@ -147,10 +156,32 @@ close_file:
     gb->f = (gb->a == 0) << 7;  \
     return 1;                   \
 }
+
 #define or_a_hl() {                     \
     gb->a |= gb_mem_read(gb, gb->hl);   \
     gb->f = (gb->a == 0) << 7;          \
     return 2;                           \
+}
+
+#define cp_a_r(r) {                                        \
+    u8 c = gb->r > gb->a;                                   \
+    u8 h = (((gb->a & 0xf) - (gb->r & 0xf)) & 0x10) != 0;   \
+    gb->f = ((gb-> a == 0) << 7) | /* Z */                  \
+            FLAG_N | /* N = 1 */                            \
+            (h << 5) | /* H */                              \
+            (c << 4); /* C */                               \
+    return 1;                                               \
+}
+
+#define cp_a_hl(r) {                                        \
+    u8 val = gb_mem_read(gb, gb->hl);                       \
+    u8 c = val > gb->a;                                     \
+    u8 h = (((gb->a & 0xf) - (val & 0xf)) & 0x10) != 0;     \
+    gb->f = ((gb-> a == 0) << 7) | /* Z */                  \
+            FLAG_N | /* N = 1 */                            \
+            (h << 5) | /* H */                              \
+            (c << 4); /* C */                               \
+    return 2;                                               \
 }
 
 int gb_cpu_step(GameBoy *gb) {
@@ -247,6 +278,52 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x95: sub_a_r(l);
     case 0x96: sub_a_hl();
     case 0x97: sub_a_r(a);
+    
+    case 0x98: todo_opcode();
+    case 0x99: todo_opcode();
+    case 0x9a: todo_opcode();
+    case 0x9b: todo_opcode();
+    case 0x9c: todo_opcode();
+    case 0x9d: todo_opcode();
+    case 0x9e: todo_opcode();
+    case 0x9f: todo_opcode();
+
+    case 0xa0: and_a_r(b);
+    case 0xa1: and_a_r(c);
+    case 0xa2: and_a_r(d);
+    case 0xa3: and_a_r(e);
+    case 0xa4: and_a_r(h);
+    case 0xa5: and_a_r(l);
+    case 0xa6: and_a_hl();
+    case 0xa7: and_a_r(a);
+    
+    case 0xa8: xor_a_r(b);
+    case 0xa9: xor_a_r(c);
+    case 0xaa: xor_a_r(d);
+    case 0xab: xor_a_r(e);
+    case 0xac: xor_a_r(h);
+    case 0xad: xor_a_r(l);
+    case 0xae: xor_a_hl();
+    case 0xaf: xor_a_r(a);
+
+    case 0xb0: or_a_r(b);
+    case 0xb1: or_a_r(c);
+    case 0xb2: or_a_r(d);
+    case 0xb3: or_a_r(e);
+    case 0xb4: or_a_r(h);
+    case 0xb5: or_a_r(l);
+    case 0xb6: or_a_hl();
+    case 0xb7: or_a_r(a);
+    
+    case 0xb8: cp_a_r(b);
+    case 0xb9: cp_a_r(c);
+    case 0xba: cp_a_r(d);
+    case 0xbb: cp_a_r(e);
+    case 0xbc: cp_a_r(h);
+    case 0xbd: cp_a_r(l);
+    case 0xbe: cp_a_hl();
+    case 0xbf: cp_a_r(a);
+
     default: todo_opcode();
     }
 }
