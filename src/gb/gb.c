@@ -31,11 +31,6 @@ close_file:
     return 1;
 }
 
-#define F_Z (1 << 7)
-#define F_N (1 << 6)
-#define F_H (1 << 5)
-#define F_C (1 << 4)
-
 #define todo_opcode() {                                                     \
     fprintf(stderr, "Unimplemented opcode encountered: 0x%02X\n", opcode);  \
     abort();                                                                \
@@ -61,7 +56,7 @@ close_file:
     u8 h = (gb->a & 0xf) + (gb->r & 0xf) > 0xf; \
     gb->a = (u8)res;                            \
     gb->f = ((gb->a == 0) << 7) | /* Z */       \
-            /* N = 0*/                          \
+            /* N = 0 */                         \
             (h << 5) | /* H */                  \
             ((res > 0xff) << 4); /* C */        \
     return 1;                                   \
@@ -165,10 +160,11 @@ void gb_free(GameBoy *gb) {
 }
 
 void gb_mem_write(GameBoy *gb, u16 addr, u8 val) {
-
+(void)gb, (void)addr, (void)val;
 }
 
 u8 gb_mem_read(GameBoy *gb, u16 addr) {
+    (void)gb, (void)addr;
     return 0;
 }
 
@@ -182,7 +178,7 @@ void gb_io_write(GameBoy *gb, u16 addr, u8 val) {
         val |= 2;
         gb->io_regs[io_reg] = val | (~0x83);
         if (((val & 0x80) && (val & 0x01)) && gb->serial_io) {
-            gb->serial_io(gb, gb->io_regs[GB_IO_SB]);
+            gb->serial_io(gb->io_regs[GB_IO_SB]);
         }
         break;
     }

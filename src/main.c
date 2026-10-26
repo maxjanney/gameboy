@@ -11,7 +11,7 @@ size_t pos = 0;
 
 GameBoy gb;
 
-void serial(GameBoy *gb, u8 val) {
+void serial(u8 val) {
 	if (pos < OUTPUT_SIZE - 1) {
 		serial_buf[pos++] = val;
 		serial_buf[pos] = '\0';

@@ -3,7 +3,7 @@
 #define GB_IO_REGS 0x80
 
 typedef struct GameBoy GameBoy;
-typedef void(*SerialCallback)(GameBoy*, u8);
+typedef void(*SerialCallback)(u8);
 
 struct GameBoy {
     union {
