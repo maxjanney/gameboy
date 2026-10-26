@@ -160,7 +160,7 @@ void gb_free(GameBoy *gb) {
 }
 
 void gb_mem_write(GameBoy *gb, u16 addr, u8 val) {
-(void)gb, (void)addr, (void)val;
+    (void)gb, (void)addr, (void)val;
 }
 
 u8 gb_mem_read(GameBoy *gb, u16 addr) {
