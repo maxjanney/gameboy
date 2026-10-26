@@ -129,6 +129,30 @@ close_file:
     return 1;                                           \
 }
 
+#define and_a_r(r) {                        \
+    gb->a &= gb->r;                         \
+    gb->f = ((gb->a == 0) << 7) | FLAG_H;   \
+    return 1;                               \
+}
+
+#define and_a_hl() {                        \
+    u8 val = gb_mem_read(gb, gb->hl);       \
+    gb->a &= val;                           \
+    gb->f = ((gb->a == 0) << 7) | FLAG_H;   \
+    return 2;                               \
+}
+
+#define or_a_r(r) {             \
+    gb->a |= gb->r;             \
+    gb->f = (gb->a == 0) << 7;  \
+    return 1;                   \
+}
+#define or_a_hl() {                     \
+    gb->a |= gb_mem_read(gb, gb->hl);   \
+    gb->f = (gb->a == 0) << 7;          \
+    return 2;                           \
+}
+
 int gb_cpu_step(GameBoy *gb) {
     u8 opcode = gb_mem_read(gb, gb->pc++);
     switch (opcode) {
