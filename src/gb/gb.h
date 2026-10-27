@@ -22,6 +22,11 @@ struct GameBoy {
             u16 sp;
         };
     };
+
+    u8 oam[0xa0];
+    u8 wram[0x2000];
+    u8 hram[0x7f];
+
     u8 *rom;
     u8 io_regs[GB_IO_REGS];
 

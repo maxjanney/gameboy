@@ -1,4 +1,8 @@
+// init gameboy to a state right after the boot rom has finished and is safe to load a rom
+// this assumes gb is zero inited or inited from a previous invocation
 void gb_init(GameBoy *gb) {
+    gb_free(gb);
+    memset(gb, 0, sizeof(*gb));
     gb->af = 0x01b0;
     gb->c = 0x13;
     gb->e = 0xd8;
@@ -330,7 +334,8 @@ int gb_cpu_step(GameBoy *gb) {
 
 void gb_free(GameBoy *gb) {
     if (!gb) return;
-    if (gb->rom) free(gb->rom);
+    free(gb->rom);
+    gb->rom = NULL;
 }
 
 void gb_mem_write(GameBoy *gb, u16 addr, u8 val) {
