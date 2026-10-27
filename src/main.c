@@ -1,8 +1,7 @@
-#include "base/base.h"
-#include "gb/gb.h"
+#include "base.h"
+#include "gb.h"
 
-#include "base/base.c"
-#include "gb/gb.c"
+#include "gb.c"
 
 #define OUTPUT_SIZE 1024
 
