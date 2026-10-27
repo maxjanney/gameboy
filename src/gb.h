@@ -33,7 +33,7 @@ struct GameBoy {
     SerialCallback serial_io;
 };
 
-void gb_init(GameBoy*);
+void gb_init(GameBoy*, SerialCallback);
 int gb_load_rom(GameBoy*, const char*);
 void gb_free(GameBoy*);
 

@@ -1,6 +1,6 @@
 // init gameboy to a state right after the boot rom has finished and is safe to load a rom
 // this assumes gb is zero inited or inited from a previous invocation
-void gb_init(GameBoy *gb) {
+void gb_init(GameBoy *gb, SerialCallback serial_io) {
     gb_free(gb);
     memset(gb, 0, sizeof(*gb));
     gb->af = 0x01b0;
@@ -10,6 +10,7 @@ void gb_init(GameBoy *gb) {
     gb->l = 0x4d;
     gb->pc = 0x0100;
     gb->sp = 0xFFFE;
+    gb->serial_io = serial_io;
 }
 
 int gb_load_rom(GameBoy *gb, const char *path) {
@@ -19,6 +20,7 @@ int gb_load_rom(GameBoy *gb, const char *path) {
     fseek(f, 0, SEEK_END);
     long n = ftell(f);
     fseek(f, 0, SEEK_SET);
+    if (n < 0x8000) n = 0x8000;
 
     if (gb->rom) free(gb->rom);
     gb->rom = malloc(n);
@@ -27,9 +29,11 @@ int gb_load_rom(GameBoy *gb, const char *path) {
     size_t nread = fread(gb->rom, 1, n, f);
     if (!nread && ferror(f)) goto free_rom;
     
+    fclose(f);
     return 0;
 free_rom:
     free(gb->rom);
+    gb->rom = NULL;
 close_file:
     fclose(f);
     return 1;
@@ -84,11 +88,11 @@ close_file:
 }
 
 #define adc_a_r(r) {                                        \
-    u8 c = (gb->f & FLAG_C) >> 7;                           \
+    u8 c = (gb->f & FLAG_C) >> 4;                           \
     u16 res = gb->a + gb->r + c;                            \
     u8 h = (gb->a & 0xf) + (gb->r & 0xf) + (c & 0xf) > 0xf; \
     gb->a = res;                                            \
-    gb->f = (gb->a == 0) | /* Z */                          \
+    gb->f = ((gb->a == 0) << 7) | /* Z */                   \
             /* N = 0 */                                     \
             (h << 5) | /* H */                              \
             ((res > 0xff) << 4); /* C */                    \
@@ -114,7 +118,7 @@ close_file:
     gb->a -= gb->r;                                         \
     gb->f = ((gb-> a == 0) << 7) | /* Z */                  \
             FLAG_N | /* N = 1 */                            \
-            (h << 5) | /* H */                              \
+                (h << 5) | /* H */                          \
             (c << 4); /* C */                               \
     return 1;                                               \
 }
