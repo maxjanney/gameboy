@@ -49,6 +49,13 @@ close_file:
     abort();                                                                \
 }                             
 
+#define ld_rr_u16(rr) {\
+    u8 lo = gb_mem_read(gb, gb->pc++);\
+    u8 hi = gb_mem_read(gb, gb->pc++);\
+    gb->rr = ((u16)hi << 8) | (u16)lo;\
+    return 3;\
+}
+
 #define ld_r_r(dst, src) {  \
     gb->dst = gb->src;      \
     return 1;               \
@@ -101,11 +108,11 @@ close_file:
 
 #define adc_a_hl() {                                        \
     u8 val = gb_mem_read(gb, gb->hl);                       \
-    u8 c = (gb->f & FLAG_C) >> 7;                           \
+    u8 c = (gb->f & FLAG_C) >> 4;                           \
     u16 res = gb->a + val + c;                              \
     u8 h = (gb->a & 0xf) + (val & 0xf) + (c & 0xf) > 0xf;   \
     gb->a = res;                                            \
-    gb->f = (gb->a == 0) | /* Z */                          \
+    gb->f = ((gb->a == 0) << 7) | /* Z */                          \
             /* N = 0 */                                     \
             (h << 5) | /* H */                              \
             ((res > 0xff) << 4); /* C */                    \
@@ -195,6 +202,74 @@ close_file:
 int gb_cpu_step(GameBoy *gb) {
     u8 opcode = gb_mem_read(gb, gb->pc++);
     switch (opcode) {
+    case 0x00: return 1;
+    case 0x01: ld_rr_u16(bc);
+    case 0x02: todo_opcode();
+    case 0x03: todo_opcode();
+    case 0x04: todo_opcode();
+    case 0x05: todo_opcode();
+    case 0x06: todo_opcode();
+    case 0x07: todo_opcode();
+    case 0x08: todo_opcode();
+    case 0x09: todo_opcode();
+    case 0x0a: todo_opcode();
+    case 0x0b: todo_opcode();
+    case 0x0c: todo_opcode();
+    case 0x0d: todo_opcode();
+    case 0x0e: todo_opcode();
+    case 0x0f: todo_opcode();
+
+    case 0x10: todo_opcode();
+    case 0x11: ld_rr_u16(de);
+    case 0x12: todo_opcode();
+    case 0x13: todo_opcode();
+    case 0x14: todo_opcode();
+    case 0x15: todo_opcode();
+    case 0x16: todo_opcode();
+    case 0x17: todo_opcode();
+    case 0x18: todo_opcode();
+    case 0x19: todo_opcode();
+    case 0x1a: todo_opcode();
+    case 0x1b: todo_opcode();
+    case 0x1c: todo_opcode();
+    case 0x1d: todo_opcode();
+    case 0x1e: todo_opcode();
+    case 0x1f: todo_opcode();
+
+    case 0x20: todo_opcode();
+    case 0x21: ld_rr_u16(hl);
+    case 0x22: todo_opcode();
+    case 0x23: todo_opcode();
+    case 0x24: todo_opcode();
+    case 0x25: todo_opcode();
+    case 0x26: todo_opcode();
+    case 0x27: todo_opcode();
+    case 0x28: todo_opcode();
+    case 0x29: todo_opcode();
+    case 0x2a: todo_opcode();
+    case 0x2b: todo_opcode();
+    case 0x2c: todo_opcode();
+    case 0x2d: todo_opcode();
+    case 0x2e: todo_opcode();
+    case 0x2f: todo_opcode();
+
+    case 0x30: todo_opcode();
+    case 0x31: ld_rr_u16(sp);
+    case 0x32: todo_opcode();
+    case 0x33: todo_opcode();
+    case 0x34: todo_opcode();
+    case 0x35: todo_opcode();
+    case 0x36: todo_opcode();
+    case 0x37: todo_opcode();
+    case 0x38: todo_opcode();
+    case 0x39: todo_opcode();
+    case 0x3a: todo_opcode();
+    case 0x3b: todo_opcode();
+    case 0x3c: todo_opcode();
+    case 0x3d: todo_opcode();
+    case 0x3e: todo_opcode();
+    case 0x3f: todo_opcode();
+
     case 0x40: ld_r_r(b, b);
     case 0x41: ld_r_r(b, c);
     case 0x42: ld_r_r(b, d);
