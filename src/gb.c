@@ -71,6 +71,17 @@ close_file:
     return 2;                           \
 }
 
+// addr must be used exactly once so hl++/hl-- only step once
+#define ld_addr_a(addr) {               \
+    gb_mem_write(gb, (addr), gb->a);    \
+    return 2;                           \
+}
+
+#define ld_a_addr(addr) {               \
+    gb->a = gb_mem_read(gb, (addr));    \
+    return 2;                           \
+}
+
 #define add_a_r(r) {                            \
     u16 res = gb->a + gb->r;                    \
     u8 h = (gb->a & 0xf) + (gb->r & 0xf) > 0xf; \
@@ -204,7 +215,7 @@ int gb_cpu_step(GameBoy *gb) {
     switch (opcode) {
     case 0x00: return 1;
     case 0x01: ld_rr_u16(bc);
-    case 0x02: todo_opcode();
+    case 0x02: ld_addr_a(gb->bc);
     case 0x03: todo_opcode();
     case 0x04: todo_opcode();
     case 0x05: todo_opcode();
@@ -212,7 +223,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x07: todo_opcode();
     case 0x08: todo_opcode();
     case 0x09: todo_opcode();
-    case 0x0a: todo_opcode();
+    case 0x0a: ld_a_addr(gb->bc);
     case 0x0b: todo_opcode();
     case 0x0c: todo_opcode();
     case 0x0d: todo_opcode();
@@ -221,7 +232,7 @@ int gb_cpu_step(GameBoy *gb) {
 
     case 0x10: todo_opcode();
     case 0x11: ld_rr_u16(de);
-    case 0x12: todo_opcode();
+    case 0x12: ld_addr_a(gb->de);
     case 0x13: todo_opcode();
     case 0x14: todo_opcode();
     case 0x15: todo_opcode();
@@ -229,7 +240,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x17: todo_opcode();
     case 0x18: todo_opcode();
     case 0x19: todo_opcode();
-    case 0x1a: todo_opcode();
+    case 0x1a: ld_a_addr(gb->de);
     case 0x1b: todo_opcode();
     case 0x1c: todo_opcode();
     case 0x1d: todo_opcode();
@@ -238,7 +249,7 @@ int gb_cpu_step(GameBoy *gb) {
 
     case 0x20: todo_opcode();
     case 0x21: ld_rr_u16(hl);
-    case 0x22: todo_opcode();
+    case 0x22: ld_addr_a(gb->hl++);
     case 0x23: todo_opcode();
     case 0x24: todo_opcode();
     case 0x25: todo_opcode();
@@ -246,7 +257,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x27: todo_opcode();
     case 0x28: todo_opcode();
     case 0x29: todo_opcode();
-    case 0x2a: todo_opcode();
+    case 0x2a: ld_a_addr(gb->hl++);
     case 0x2b: todo_opcode();
     case 0x2c: todo_opcode();
     case 0x2d: todo_opcode();
@@ -255,7 +266,7 @@ int gb_cpu_step(GameBoy *gb) {
 
     case 0x30: todo_opcode();
     case 0x31: ld_rr_u16(sp);
-    case 0x32: todo_opcode();
+    case 0x32: ld_addr_a(gb->hl--);
     case 0x33: todo_opcode();
     case 0x34: todo_opcode();
     case 0x35: todo_opcode();
@@ -263,7 +274,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x37: todo_opcode();
     case 0x38: todo_opcode();
     case 0x39: todo_opcode();
-    case 0x3a: todo_opcode();
+    case 0x3a: ld_a_addr(gb->hl--);
     case 0x3b: todo_opcode();
     case 0x3c: todo_opcode();
     case 0x3d: todo_opcode();
@@ -406,6 +417,21 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xbd: cp_a_r(l);
     case 0xbe: cp_a_hl();
     case 0xbf: cp_a_r(a);
+
+    case 0xe0: {
+        u8 off = gb_mem_read(gb, gb->pc++);
+        gb_mem_write(gb, 0xff00 | off, gb->a);
+        return 3;
+    }
+    case 0xe2: ld_addr_a(0xff00 | gb->c);
+    case 0xea: {
+        u8 lo = gb_mem_read(gb, gb->pc++);
+        u8 hi = gb_mem_read(gb, gb->pc++);
+        gb_mem_write(gb, ((u16)hi << 8) | (u16)lo, gb->a);
+        return 4;
+    }
+
+    case 0xf2: ld_a_addr(0xff00 | gb->c);
 
     default: todo_opcode();
     }
