@@ -16,8 +16,9 @@ void gb_init(GameBoy *gb, SerialCallback serial_io) {
 int gb_load_rom(GameBoy *gb, const char *path) {
     FILE *f = fopen(path, "rb");
     if (!f) return 1;
-    
+
     fseek(f, 0, SEEK_END);
+    // todo: round up to next bank size and then next power of 2
     long n = ftell(f);
     fseek(f, 0, SEEK_SET);
     if (n < 0x8000) n = 0x8000;
@@ -28,7 +29,7 @@ int gb_load_rom(GameBoy *gb, const char *path) {
 
     size_t nread = fread(gb->rom, 1, n, f);
     if (!nread && ferror(f)) goto free_rom;
-    
+
     fclose(f);
     return 0;
 free_rom:
@@ -47,7 +48,7 @@ close_file:
 #define todo_opcode() {                                                     \
     fprintf(stderr, "Unimplemented opcode encountered: 0x%02X\n", opcode);  \
     abort();                                                                \
-}                             
+}
 
 #define ld_rr_u16(rr) {\
     u8 lo = gb_mem_read(gb, gb->pc++);\
@@ -80,6 +81,21 @@ close_file:
 #define ld_a_addr(addr) {               \
     gb->a = gb_mem_read(gb, (addr));    \
     return 2;                           \
+}
+
+#define inc_rr(rr) {    \
+    gb->rr += 1;        \
+    return 2;           \
+}
+
+#define inc_r(r){                           \
+    u8 h = (gb->r & 0xf) == 0xf;            \
+    gb->r += 1;                             \
+    gb->f = ((gb->r == 0) << 7) /* Z */ |   \
+            /* N = 0 */                     \
+            (h << 5) | /* H */              \
+            (gb->f & FLAG_C) /* C */;       \
+    return 1;                               \
 }
 
 #define add_a_r(r) {                            \
@@ -216,8 +232,8 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x00: return 1;
     case 0x01: ld_rr_u16(bc);
     case 0x02: ld_addr_a(gb->bc);
-    case 0x03: todo_opcode();
-    case 0x04: todo_opcode();
+    case 0x03: inc_rr(bc);
+    case 0x04: inc_r(b);
     case 0x05: todo_opcode();
     case 0x06: todo_opcode();
     case 0x07: todo_opcode();
@@ -233,8 +249,8 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x10: todo_opcode();
     case 0x11: ld_rr_u16(de);
     case 0x12: ld_addr_a(gb->de);
-    case 0x13: todo_opcode();
-    case 0x14: todo_opcode();
+    case 0x13: inc_rr(de);
+    case 0x14: inc_r(d);
     case 0x15: todo_opcode();
     case 0x16: todo_opcode();
     case 0x17: todo_opcode();
@@ -250,8 +266,8 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x20: todo_opcode();
     case 0x21: ld_rr_u16(hl);
     case 0x22: ld_addr_a(gb->hl++);
-    case 0x23: todo_opcode();
-    case 0x24: todo_opcode();
+    case 0x23: inc_rr(hl);
+    case 0x24: inc_r(h);
     case 0x25: todo_opcode();
     case 0x26: todo_opcode();
     case 0x27: todo_opcode();
@@ -267,8 +283,18 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x30: todo_opcode();
     case 0x31: ld_rr_u16(sp);
     case 0x32: ld_addr_a(gb->hl--);
-    case 0x33: todo_opcode();
-    case 0x34: todo_opcode();
+    case 0x33: inc_rr(sp);
+    case 0x34: {
+        u8 val = gb_mem_read(gb, gb->hl);
+        u8 h = (val & 0xf) == 0xf;
+        u8 res = val + 1;
+        gb_mem_write(gb, gb->hl, res);
+        gb->f = ((res == 0) << 7) /* Z */ |
+                /* N = 0 */
+                (h << 5) | /* H */
+                (gb->f & FLAG_C);
+        return 3;
+    }
     case 0x35: todo_opcode();
     case 0x36: todo_opcode();
     case 0x37: todo_opcode();
@@ -372,7 +398,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x95: sub_a_r(l);
     case 0x96: sub_a_hl();
     case 0x97: sub_a_r(a);
-    
+
     case 0x98: todo_opcode();
     case 0x99: todo_opcode();
     case 0x9a: todo_opcode();
@@ -390,7 +416,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xa5: and_a_r(l);
     case 0xa6: and_a_hl();
     case 0xa7: and_a_r(a);
-    
+
     case 0xa8: xor_a_r(b);
     case 0xa9: xor_a_r(c);
     case 0xaa: xor_a_r(d);
@@ -408,7 +434,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xb5: or_a_r(l);
     case 0xb6: or_a_hl();
     case 0xb7: or_a_r(a);
-    
+
     case 0xb8: cp_a_r(b);
     case 0xb9: cp_a_r(c);
     case 0xba: cp_a_r(d);
@@ -455,9 +481,7 @@ u8 gb_mem_read(GameBoy *gb, u16 addr) {
 void gb_io_write(GameBoy *gb, u16 addr, u8 val) {
     u8 io_reg = addr & 0x7f;
     switch (io_reg) {
-    case GB_IO_SB:
-        gb->io_regs[io_reg] = val;
-        break;
+    case GB_IO_SB: gb->io_regs[io_reg] = val; break;
     case GB_IO_SC:
         val |= 2;
         gb->io_regs[io_reg] = val | (~0x83);

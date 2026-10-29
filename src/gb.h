@@ -3,7 +3,7 @@
 #define GB_IO_REGS 0x80
 
 typedef struct GameBoy GameBoy;
-typedef void(*SerialCallback)(u8);
+typedef void (*SerialCallback)(u8);
 
 struct GameBoy {
     union {
@@ -33,12 +33,12 @@ struct GameBoy {
     SerialCallback serial_io;
 };
 
-void gb_init(GameBoy*, SerialCallback);
-int gb_load_rom(GameBoy*, const char*);
-void gb_free(GameBoy*);
+void gb_init(GameBoy *, SerialCallback);
+int gb_load_rom(GameBoy *, const char *);
+void gb_free(GameBoy *);
 
-int gb_cpu_step(GameBoy*);
+int gb_cpu_step(GameBoy *);
 
-void gb_mem_write(GameBoy*, u16, u8);
-u8 gb_mem_read(GameBoy*, u16);
-void gb_io_write(GameBoy*, u16, u8);
+void gb_mem_write(GameBoy *, u16, u8);
+u8 gb_mem_read(GameBoy *, u16);
+void gb_io_write(GameBoy *, u16, u8);

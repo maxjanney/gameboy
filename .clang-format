@@ -1,0 +1,39 @@
+---
+BasedOnStyle: LLVM
+Language: Cpp
+
+# 4-space indentation, no tabs
+IndentWidth: 4
+ContinuationIndentWidth: 4
+UseTab: Never
+ColumnLimit: 100
+
+# `switch` cases sit at the same level as the `switch`
+IndentCaseLabels: false
+# goto labels flush left
+IndentGotoLabels: false
+
+# keep `if (!f) return 1;` and `case 0x00: return 1;` on one line
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortBlocksOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# `GameBoy *gb`
+PointerAlignment: Right
+
+# leave hand-formatted macro bodies (opcode helpers) untouched
+SkipMacroDefinitionBody: true
+# align `\` of multi-line macros to the longest line, not the column limit
+AlignEscapedNewlines: Left
+# align values of consecutive #defines (GB_IO_SB   0x01)
+AlignConsecutiveMacros: Consecutive
+AlignTrailingComments: true
+
+# include order matters (main.c includes gb.c), don't reorder
+SortIncludes: Never
+
+# don't strip intentional blank lines, but cap them
+MaxEmptyLinesToKeep: 1
+...
