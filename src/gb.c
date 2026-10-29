@@ -285,13 +285,11 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x32: ld_addr_a(gb->hl--);
     case 0x33: inc_rr(sp);
     case 0x34: {
-        u8 val = gb_mem_read(gb, gb->hl);
-        u8 h = (val & 0xf) == 0xf;
-        u8 res = val + 1;
+        u8 res = gb_mem_read(gb, gb->hl) + 1;
         gb_mem_write(gb, gb->hl, res);
         gb->f = ((res == 0) << 7) /* Z */ |
                 /* N = 0 */
-                (h << 5) | /* H */
+                (((res & 0xf) == 0) << 5) | /* H */
                 (gb->f & FLAG_C);
         return 3;
     }
