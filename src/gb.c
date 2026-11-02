@@ -267,6 +267,13 @@ close_file:
     return 2;                                   \
 }
 
+#define pop_rr(rr) {\
+    u8 lo = gb_mem_read(gb, gb->sp++);\
+    u8 hi = gb_mem_read(gb, gb->sp++);\
+    gb->rr =((u16)hi << 8) | lo;\
+    return 3;\
+}
+
 int gb_cpu_step(GameBoy *gb) {
     u8 opcode = gb_mem_read(gb, gb->pc++);
     switch (opcode) {
@@ -338,7 +345,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x29: add_hl_rr(hl);
     case 0x2a: ld_a_addr(gb->hl++);
     case 0x2b: dec_rr(hl);
-    case 0x2c: inc_r(e);
+    case 0x2c: inc_r(l);
     case 0x2d: dec_r(l);
     case 0x2e: ld_r_u8(l);
     case 0x2f: todo_opcode();
@@ -505,22 +512,86 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xbe: cp_a_hl();
     case 0xbf: cp_a_r(a);
 
+    case 0xc0: todo_opcode();
+    case 0xc1: todo_opcode();
+    case 0xc2: todo_opcode();
+    case 0xc3: todo_opcode();
+    case 0xc4: todo_opcode();
+    case 0xc5: todo_opcode();
+    case 0xc6: todo_opcode();
+    case 0xc7: todo_opcode();
+
+    case 0xc8: todo_opcode();
+    case 0xc9: todo_opcode();
+    case 0xca: todo_opcode();
+    case 0xcb: todo_opcode();
+    case 0xcc: todo_opcode();
+    case 0xcd: todo_opcode();
+    case 0xce: todo_opcode();
+    case 0xcf: todo_opcode();
+
+    case 0xd0: todo_opcode();
+    case 0xd1: todo_opcode();
+    case 0xd2: todo_opcode();
+    case 0xd3: todo_opcode();
+    case 0xd4: todo_opcode();
+    case 0xd5: todo_opcode();
+    case 0xd6: todo_opcode();
+    case 0xd7: todo_opcode();
+
+    case 0xd8: todo_opcode();
+    case 0xd9: todo_opcode();
+    case 0xda: todo_opcode();
+    case 0xdb: todo_opcode();
+    case 0xdc: todo_opcode();
+    case 0xdd: todo_opcode();
+    case 0xde: todo_opcode();
+    case 0xdf: todo_opcode();
+
     case 0xe0: {
         u8 off = gb_mem_read(gb, gb->pc++);
         gb_mem_write(gb, 0xff00 | off, gb->a);
         return 3;
     }
+    case 0xe1: todo_opcode();
     case 0xe2: ld_addr_a(0xff00 | gb->c);
+    case 0xe3: todo_opcode();
+    case 0xe4: todo_opcode();
+    case 0xe5: todo_opcode();
+    case 0xe6: todo_opcode();
+    case 0xe7: todo_opcode();
+
+    case 0xe8: todo_opcode();
+    case 0xe9: todo_opcode();
     case 0xea: {
         u8 lo = gb_mem_read(gb, gb->pc++);
         u8 hi = gb_mem_read(gb, gb->pc++);
         gb_mem_write(gb, ((u16)hi << 8) | (u16)lo, gb->a);
         return 4;
     }
+    case 0xeb: todo_opcode();
+    case 0xec: todo_opcode();
+    case 0xed: todo_opcode();
+    case 0xee: todo_opcode();
+    case 0xef: todo_opcode();
 
+    case 0xf0: todo_opcode();
+    case 0xf1: todo_opcode();
     case 0xf2: ld_a_addr(0xff00 | gb->c);
+    case 0xf3: todo_opcode();
+    case 0xf4: todo_opcode();
+    case 0xf5: todo_opcode();
+    case 0xf6: todo_opcode();
+    case 0xf7: todo_opcode();
 
-    default: todo_opcode();
+    case 0xf8: todo_opcode();
+    case 0xf9: todo_opcode();
+    case 0xfa: todo_opcode();
+    case 0xfb: todo_opcode();
+    case 0xfc: todo_opcode();
+    case 0xfd: todo_opcode();
+    case 0xfe: todo_opcode();
+    case 0xff: todo_opcode();
     }
 }
 
