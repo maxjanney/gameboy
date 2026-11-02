@@ -267,11 +267,17 @@ close_file:
     return 2;                                   \
 }
 
-#define pop_rr(rr) {\
-    u8 lo = gb_mem_read(gb, gb->sp++);\
-    u8 hi = gb_mem_read(gb, gb->sp++);\
-    gb->rr =((u16)hi << 8) | lo;\
-    return 3;\
+#define pop_rr(rr) {                    \
+    u8 lo = gb_mem_read(gb, gb->sp++);  \
+    u8 hi = gb_mem_read(gb, gb->sp++);  \
+    gb->rr =((u16)hi << 8) | lo;        \
+    return 3;                           \
+}
+
+#define push_rr(hi, lo) {               \
+    gb_mem_write(gb, --gb->sp, gb->hi); \
+    gb_mem_write(gb, --gb->sp, gb->lo); \
+    return 4;                           \
 }
 
 int gb_cpu_step(GameBoy *gb) {
@@ -363,7 +369,15 @@ int gb_cpu_step(GameBoy *gb) {
                 (gb->f & FLAG_C);
         return 3;
     }
-    case 0x35: todo_opcode();
+    case 0x35: {
+        u8 val = gb_mem_read(gb, gb->hl) - 1;
+        gb_mem_write(gb, gb->hl, val);
+        gb->f = (val == 0 ? FLAG_Z : 0) |
+                FLAG_N |
+                ((val & 0xf) == 0xf ? FLAG_H : 0) |
+                (gb->f & FLAG_C);
+        return 3;
+    }
     case 0x36: gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->pc++)); return 3;
     case 0x37: todo_opcode();
     case 0x38: jr_rel(gb->f & FLAG_C);
@@ -513,11 +527,11 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xbf: cp_a_r(a);
 
     case 0xc0: todo_opcode();
-    case 0xc1: todo_opcode();
+    case 0xc1: pop_rr(bc);
     case 0xc2: todo_opcode();
     case 0xc3: todo_opcode();
     case 0xc4: todo_opcode();
-    case 0xc5: todo_opcode();
+    case 0xc5: push_rr(b, c);
     case 0xc6: todo_opcode();
     case 0xc7: todo_opcode();
 
@@ -531,11 +545,11 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xcf: todo_opcode();
 
     case 0xd0: todo_opcode();
-    case 0xd1: todo_opcode();
+    case 0xd1: pop_rr(b, c);
     case 0xd2: todo_opcode();
     case 0xd3: todo_opcode();
     case 0xd4: todo_opcode();
-    case 0xd5: todo_opcode();
+    case 0xd5: push_rr(d, e);
     case 0xd6: todo_opcode();
     case 0xd7: todo_opcode();
 
@@ -553,11 +567,11 @@ int gb_cpu_step(GameBoy *gb) {
         gb_mem_write(gb, 0xff00 | off, gb->a);
         return 3;
     }
-    case 0xe1: todo_opcode();
+    case 0xe1: pop_rr(hl);
     case 0xe2: ld_addr_a(0xff00 | gb->c);
     case 0xe3: todo_opcode();
     case 0xe4: todo_opcode();
-    case 0xe5: todo_opcode();
+    case 0xe5: push_rr(h, l);
     case 0xe6: todo_opcode();
     case 0xe7: todo_opcode();
 
@@ -576,11 +590,16 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xef: todo_opcode();
 
     case 0xf0: todo_opcode();
-    case 0xf1: todo_opcode();
+    case 0xf1: {
+        u8 lo = gb_mem_read(gb, gb->sp++);
+        u8 hi = gb_mem_read(gb, gb->sp++);
+        gb->af = (((u16)hi << 8) | lo) & 0xfff0;
+        return 3;
+    }
     case 0xf2: ld_a_addr(0xff00 | gb->c);
     case 0xf3: todo_opcode();
     case 0xf4: todo_opcode();
-    case 0xf5: todo_opcode();
+    case 0xf5: push_rr(a, f);
     case 0xf6: todo_opcode();
     case 0xf7: todo_opcode();
 

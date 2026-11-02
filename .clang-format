@@ -31,6 +31,11 @@ AlignEscapedNewlines: Left
 AlignConsecutiveMacros: Consecutive
 AlignTrailingComments: true
 
+# when a binary expression (e.g. flag computation) wraps, put one operand per line
+# instead of packing them, and prefer breaking there over breaking after `=`
+BreakBinaryOperations: OnePerLine
+PenaltyBreakAssignment: 1000
+
 # include order matters (main.c includes gb.c), don't reorder
 SortIncludes: Never
 
