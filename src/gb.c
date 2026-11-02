@@ -171,7 +171,7 @@ close_file:
     u16 res = gb->a + val + c;                              \
     u8 h = (gb->a & 0xf) + (val & 0xf) + (c & 0xf) > 0xf;   \
     gb->a = res;                                            \
-    gb->f = ((gb->a == 0) << 7) | /* Z */                          \
+    gb->f = ((gb->a == 0) << 7) | /* Z */                   \
             /* N = 0 */                                     \
             (h << 5) | /* H */                              \
             ((res > 0xff) << 4); /* C */                    \
@@ -182,9 +182,9 @@ close_file:
     u8 c = gb->r > gb->a;                                   \
     u8 h = (((gb->a & 0xf) - (gb->r & 0xf)) & 0x10) != 0;   \
     gb->a -= gb->r;                                         \
-    gb->f = ((gb-> a == 0) << 7) | /* Z */                  \
+    gb->f = ((gb->a == 0) << 7) | /* Z */                   \
             FLAG_N | /* N = 1 */                            \
-                (h << 5) | /* H */                          \
+            (h << 5) | /* H */                              \
             (c << 4); /* C */                               \
     return 1;                                               \
 }
@@ -194,7 +194,7 @@ close_file:
     u8 c = val > gb->a;                                 \
     u8 h = (((gb->a & 0xf) - (val & 0xf)) & 0x10) != 0; \
     gb->a -= val;                                       \
-    gb->f = ((gb-> a == 0) << 7) | /* Z */              \
+    gb->f = ((gb->a == 0) << 7) | /* Z */               \
             FLAG_N | /* N = 1 */                        \
             (h << 5) | /* H */                          \
             (c << 4); /* C */                           \
@@ -219,7 +219,7 @@ close_file:
     return 1;                   \
 }
 
-#define xor_a_hl(r) {                    \
+#define xor_a_hl() {                     \
     gb->a ^= gb_mem_read(gb, gb->hl);   \
     gb->f = (gb->a == 0) << 7;          \
     return 2;                           \
@@ -237,25 +237,25 @@ close_file:
     return 2;                           \
 }
 
-#define cp_a_r(r) {                                        \
+#define cp_a_r(r) {                                         \
     u8 c = gb->r > gb->a;                                   \
     u8 h = (((gb->a & 0xf) - (gb->r & 0xf)) & 0x10) != 0;   \
-    gb->f = ((gb-> a == 0) << 7) | /* Z */                  \
+    gb->f = ((gb->a == gb->r) << 7) | /* Z */               \
             FLAG_N | /* N = 1 */                            \
             (h << 5) | /* H */                              \
             (c << 4); /* C */                               \
     return 1;                                               \
 }
 
-#define cp_a_hl(r) {                                        \
-    u8 val = gb_mem_read(gb, gb->hl);                       \
-    u8 c = val > gb->a;                                     \
-    u8 h = (((gb->a & 0xf) - (val & 0xf)) & 0x10) != 0;     \
-    gb->f = ((gb-> a == 0) << 7) | /* Z */                  \
-            FLAG_N | /* N = 1 */                            \
-            (h << 5) | /* H */                              \
-            (c << 4); /* C */                               \
-    return 2;                                               \
+#define cp_a_hl() {                                     \
+    u8 val = gb_mem_read(gb, gb->hl);                   \
+    u8 c = val > gb->a;                                 \
+    u8 h = (((gb->a & 0xf) - (val & 0xf)) & 0x10) != 0; \
+    gb->f = ((gb->a == val) << 7) | /* Z */             \
+            FLAG_N | /* N = 1 */                        \
+            (h << 5) | /* H */                          \
+            (c << 4); /* C */                           \
+    return 2;                                           \
 }
 
 #define jr_rel(cond) {                          \
@@ -545,7 +545,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xcf: todo_opcode();
 
     case 0xd0: todo_opcode();
-    case 0xd1: pop_rr(b, c);
+    case 0xd1: pop_rr(de);
     case 0xd2: todo_opcode();
     case 0xd3: todo_opcode();
     case 0xd4: todo_opcode();

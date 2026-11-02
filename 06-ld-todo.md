@@ -9,8 +9,8 @@ tables, checksums, console, and serial output).
 
 ## 1. Bugs in existing code that will break the test
 
-- [ ] **`0xd1` doesn't compile**: `pop_rr(b, c)` should be `pop_rr(de)`.
-- [ ] **CP sets Z wrong** (`cp_a_r`, `cp_a_hl`): Z is set from `gb->a == 0`, but CP should set Z
+- [x] **`0xd1` doesn't compile**: `pop_rr(b, c)` should be `pop_rr(de)`.
+- [x] **CP sets Z wrong** (`cp_a_r`, `cp_a_hl`): Z is set from `gb->a == 0`, but CP should set Z
       when `a - r == 0`, i.e. when `a == r`. The framework's main loop uses `CP C` (`0xb9`) to
       detect the end of the instruction list, and `CP n` (`0xfe`) is used throughout.
 
