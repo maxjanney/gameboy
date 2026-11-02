@@ -40,10 +40,10 @@ close_file:
     return 1;
 }
 
-#define FLAG_Z (1 << 7)
-#define FLAG_N (1 << 6)
-#define FLAG_H (1 << 5)
-#define FLAG_C (1 << 4)
+#define GB_FLAG_Z (1 << 7)
+#define GB_FLAG_N (1 << 6)
+#define GB_FLAG_H (1 << 5)
+#define GB_FLAG_C (1 << 4)
 
 #define todo_opcode() {                                                     \
     fprintf(stderr, "Unimplemented opcode encountered: 0x%02X\n", opcode);  \
@@ -99,7 +99,7 @@ close_file:
     gb->f = ((gb->r == 0) << 7) /* Z */ |   \
             /* N = 0 */                     \
             (h << 5) | /* H */              \
-            (gb->f & FLAG_C) /* C */;       \
+            (gb->f & GB_FLAG_C) /* C */;    \
     return 1;                               \
 }
 
@@ -107,9 +107,9 @@ close_file:
     u8 h = (gb->r & 0xf) == 0;              \
     gb->r -= 1;                             \
     gb->f = ((gb->r == 0) << 7) /* Z */ |   \
-            FLAG_N /* N = 1 */ |            \
+            GB_FLAG_N /* N = 1 */ |         \
             (h << 5) /* H */ |              \
-            (gb->f & FLAG_C) /* C */;       \
+            (gb->f & GB_FLAG_C) /* C */;    \
     return 1;                               \
 }
 
@@ -146,7 +146,7 @@ close_file:
     u32 res = gb->hl + gb->rr;                          \
     u8 c = res > 0xffff;                                \
     gb->hl = res;                                       \
-    gb->f = (gb->f & FLAG_Z) /* Z */ |                  \
+    gb->f = (gb->f & GB_FLAG_Z) /* Z */ |               \
             /* N = 0 */                                 \
             (h << 5) /* H */ |                          \
             (c << 4); /* C */                           \
@@ -154,7 +154,7 @@ close_file:
 }
 
 #define adc_a_r(r) {                                        \
-    u8 c = (gb->f & FLAG_C) >> 4;                           \
+    u8 c = (gb->f & GB_FLAG_C) >> 4;                        \
     u16 res = gb->a + gb->r + c;                            \
     u8 h = (gb->a & 0xf) + (gb->r & 0xf) + (c & 0xf) > 0xf; \
     gb->a = res;                                            \
@@ -167,7 +167,7 @@ close_file:
 
 #define adc_a_hl() {                                        \
     u8 val = gb_mem_read(gb, gb->hl);                       \
-    u8 c = (gb->f & FLAG_C) >> 4;                           \
+    u8 c = (gb->f & GB_FLAG_C) >> 4;                        \
     u16 res = gb->a + val + c;                              \
     u8 h = (gb->a & 0xf) + (val & 0xf) + (c & 0xf) > 0xf;   \
     gb->a = res;                                            \
@@ -183,7 +183,7 @@ close_file:
     u8 h = (((gb->a & 0xf) - (gb->r & 0xf)) & 0x10) != 0;   \
     gb->a -= gb->r;                                         \
     gb->f = ((gb->a == 0) << 7) | /* Z */                   \
-            FLAG_N | /* N = 1 */                            \
+            GB_FLAG_N | /* N = 1 */                         \
             (h << 5) | /* H */                              \
             (c << 4); /* C */                               \
     return 1;                                               \
@@ -195,22 +195,22 @@ close_file:
     u8 h = (((gb->a & 0xf) - (val & 0xf)) & 0x10) != 0; \
     gb->a -= val;                                       \
     gb->f = ((gb->a == 0) << 7) | /* Z */               \
-            FLAG_N | /* N = 1 */                        \
+            GB_FLAG_N | /* N = 1 */                     \
             (h << 5) | /* H */                          \
             (c << 4); /* C */                           \
     return 2;                                           \
 }
 
-#define and_a_r(r) {                        \
-    gb->a &= gb->r;                         \
-    gb->f = ((gb->a == 0) << 7) | FLAG_H;   \
-    return 1;                               \
+#define and_a_r(r) {                            \
+    gb->a &= gb->r;                             \
+    gb->f = ((gb->a == 0) << 7) | GB_FLAG_H;    \
+    return 1;                                   \
 }
 
-#define and_a_hl() {                        \
-    gb->a &= gb_mem_read(gb, gb->hl);       \
-    gb->f = ((gb->a == 0) << 7) | FLAG_H;   \
-    return 2;                               \
+#define and_a_hl() {                            \
+    gb->a &= gb_mem_read(gb, gb->hl);           \
+    gb->f = ((gb->a == 0) << 7) | GB_FLAG_H;    \
+    return 2;                                   \
 }
 
 #define xor_a_r(r) {            \
@@ -241,7 +241,7 @@ close_file:
     u8 c = gb->r > gb->a;                                   \
     u8 h = (((gb->a & 0xf) - (gb->r & 0xf)) & 0x10) != 0;   \
     gb->f = ((gb->a == gb->r) << 7) | /* Z */               \
-            FLAG_N | /* N = 1 */                            \
+            GB_FLAG_N | /* N = 1 */                         \
             (h << 5) | /* H */                              \
             (c << 4); /* C */                               \
     return 1;                                               \
@@ -252,7 +252,7 @@ close_file:
     u8 c = val > gb->a;                                 \
     u8 h = (((gb->a & 0xf) - (val & 0xf)) & 0x10) != 0; \
     gb->f = ((gb->a == val) << 7) | /* Z */             \
-            FLAG_N | /* N = 1 */                        \
+            GB_FLAG_N | /* N = 1 */                     \
             (h << 5) | /* H */                          \
             (c << 4); /* C */                           \
     return 2;                                           \
@@ -325,7 +325,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x15: dec_r(d);
     case 0x16: ld_r_u8(d);
     case 0x17: {
-        u8 c = (gb->f & FLAG_C) >> 4;
+        u8 c = (gb->f & GB_FLAG_C) >> 4;
         gb->f = (gb->a & 0x80) >> 3;
         gb->a = (gb->a << 1) | c;
         return 1;
@@ -339,7 +339,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x1e: ld_r_u8(e);
     case 0x1f: todo_opcode();
 
-    case 0x20: jr_rel(!(gb->f & FLAG_Z));
+    case 0x20: jr_rel(!(gb->f & GB_FLAG_Z));
     case 0x21: ld_rr_u16(hl);
     case 0x22: ld_addr_a(gb->hl++);
     case 0x23: inc_rr(hl);
@@ -347,7 +347,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x25: dec_r(h);
     case 0x26: ld_r_u8(h);
     case 0x27: todo_opcode();
-    case 0x28: jr_rel(gb->f & FLAG_Z);
+    case 0x28: jr_rel(gb->f & GB_FLAG_Z);
     case 0x29: add_hl_rr(hl);
     case 0x2a: ld_a_addr(gb->hl++);
     case 0x2b: dec_rr(hl);
@@ -356,7 +356,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x2e: ld_r_u8(l);
     case 0x2f: todo_opcode();
 
-    case 0x30: jr_rel(!(gb->f & FLAG_C));
+    case 0x30: jr_rel(!(gb->f & GB_FLAG_C));
     case 0x31: ld_rr_u16(sp);
     case 0x32: ld_addr_a(gb->hl--);
     case 0x33: inc_rr(sp);
@@ -366,21 +366,21 @@ int gb_cpu_step(GameBoy *gb) {
         gb->f = ((res == 0) << 7) /* Z */ |
                 /* N = 0 */
                 (((res & 0xf) == 0) << 5) | /* H */
-                (gb->f & FLAG_C);
+                (gb->f & GB_FLAG_C);
         return 3;
     }
     case 0x35: {
         u8 val = gb_mem_read(gb, gb->hl) - 1;
         gb_mem_write(gb, gb->hl, val);
-        gb->f = (val == 0 ? FLAG_Z : 0) |
-                FLAG_N |
-                ((val & 0xf) == 0xf ? FLAG_H : 0) |
-                (gb->f & FLAG_C);
+        gb->f = (val == 0 ? GB_FLAG_Z : 0) |
+                GB_FLAG_N |
+                ((val & 0xf) == 0xf ? GB_FLAG_H : 0) |
+                (gb->f & GB_FLAG_C);
         return 3;
     }
     case 0x36: gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->pc++)); return 3;
     case 0x37: todo_opcode();
-    case 0x38: jr_rel(gb->f & FLAG_C);
+    case 0x38: jr_rel(gb->f & GB_FLAG_C);
     case 0x39: add_hl_rr(sp);
     case 0x3a: ld_a_addr(gb->hl--);
     case 0x3b: dec_rr(sp);
