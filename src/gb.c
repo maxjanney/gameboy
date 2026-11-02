@@ -294,7 +294,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x09: add_hl_rr(bc);
     case 0x0a: ld_a_addr(gb->bc);
     case 0x0b: dec_rr(bc);
-    case 0x0c: todo_opcode();
+    case 0x0c: inc_r(c);
     case 0x0d: dec_r(c);
     case 0x0e: ld_r_u8(c);
     case 0x0f: {
@@ -321,7 +321,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x19: add_hl_rr(de);
     case 0x1a: ld_a_addr(gb->de);
     case 0x1b: dec_rr(de);
-    case 0x1c: todo_opcode();
+    case 0x1c: inc_r(e);
     case 0x1d: dec_r(e);
     case 0x1e: ld_r_u8(e);
     case 0x1f: todo_opcode();
@@ -338,7 +338,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x29: add_hl_rr(hl);
     case 0x2a: ld_a_addr(gb->hl++);
     case 0x2b: dec_rr(hl);
-    case 0x2c: todo_opcode();
+    case 0x2c: inc_r(e);
     case 0x2d: dec_r(l);
     case 0x2e: ld_r_u8(l);
     case 0x2f: todo_opcode();
@@ -363,7 +363,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x39: add_hl_rr(sp);
     case 0x3a: ld_a_addr(gb->hl--);
     case 0x3b: dec_rr(sp);
-    case 0x3c: todo_opcode();
+    case 0x3c: inc_r(a);
     case 0x3d: dec_r(a);
     case 0x3e: ld_r_u8(a);
     case 0x3f: todo_opcode();
@@ -538,6 +538,9 @@ u8 gb_mem_read(GameBoy *gb, u16 addr) {
     (void)gb, (void)addr;
     return 0;
 }
+
+#define GB_IO_SB   0x01
+#define GB_IO_SC   0x02
 
 void gb_io_write(GameBoy *gb, u16 addr, u8 val) {
     u8 io_reg = addr & 0x7f;

@@ -1,10 +1,6 @@
-#define GB_IO_SB   0x01
-#define GB_IO_SC   0x02
-#define GB_IO_REGS 0x80
-
-typedef struct GameBoy GameBoy;
 typedef void (*SerialCallback)(u8);
 
+typedef struct GameBoy GameBoy;
 struct GameBoy {
     union {
         struct {
@@ -28,8 +24,7 @@ struct GameBoy {
     u8 hram[0x7f];
 
     u8 *rom;
-    u8 io_regs[GB_IO_REGS];
-
+    u8 io_regs[0x80];
     SerialCallback serial_io;
 };
 
