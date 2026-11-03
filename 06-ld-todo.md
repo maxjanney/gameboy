@@ -23,9 +23,6 @@ Cycle counts are in M-cycles, the same unit as the rest of `gb_cpu_step`.
 Check with cc to review the implemented instructions
 | Opcode | Instruction | Cycles | Notes |
 | ------ | ----------- | ------ | --------------------------------------------------------------------------- |
-| `CD` | CALL nn | 6 | Push `pc` (after the operand), then jump. |
-| `C4` | CALL NZ,nn | 6 / 3 | taken / not taken |
-| `D4` | CALL NC,nn | 6 / 3 | taken / not taken |
 | `C9` | RET | 4 | |
 | `C8` | RET Z | 5 / 2 | taken / not taken |
 | `D0` | RET NC | 5 / 2 | |
