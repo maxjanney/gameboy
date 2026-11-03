@@ -56,10 +56,10 @@ close_file:
 }
 
 #define ld_rr_u16(rr) {\
-    u8 lo = gb_mem_read(gb, gb->pc++);\
-    u8 hi = gb_mem_read(gb, gb->pc++);\
-    gb->rr = ((u16)hi << 8) | (u16)lo;\
-    return 3;\
+    u8 lo = gb_mem_read(gb, gb->pc++);  \
+    u8 hi = gb_mem_read(gb, gb->pc++);  \
+    gb->rr = ((u16)hi << 8) | (u16)lo;  \
+    return 3;                           \
 }
 
 #define ld_r_r(dst, src) {  \
@@ -337,7 +337,12 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x1c: inc_r(e);
     case 0x1d: dec_r(e);
     case 0x1e: ld_r_u8(e);
-    case 0x1f: todo_opcode();
+    case 0x1f: {
+        u8 c = gb->a & 0x01;
+        gb->a >>= 1;
+        gb->f = c << 4;
+        return 1;
+    }
 
     case 0x20: jr_rel(!(gb->f & GB_FLAG_Z));
     case 0x21: ld_rr_u16(hl);
