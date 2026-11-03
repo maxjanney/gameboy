@@ -56,10 +56,10 @@ close_file:
 }
 
 #define ld_rr_u16(rr) {\
-    u8 lo = gb_mem_read(gb, gb->pc++);\
-    u8 hi = gb_mem_read(gb, gb->pc++);\
-    gb->rr = ((u16)hi << 8) | (u16)lo;\
-    return 3;\
+    u8 lo = gb_mem_read(gb, gb->pc++);  \
+    u8 hi = gb_mem_read(gb, gb->pc++);  \
+    gb->rr = ((u16)hi << 8) | (u16)lo;  \
+    return 3;                           \
 }
 
 #define ld_r_r(dst, src) {  \
