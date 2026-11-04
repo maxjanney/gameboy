@@ -13,6 +13,19 @@ tables, checksums, console, and serial output).
 - [x] **CP sets Z wrong** (`cp_a_r`, `cp_a_hl`): Z is set from `gb->a == 0`, but CP should set Z
       when `a - r == 0`, i.e. when `a == r`. The framework's main loop uses `CP C` (`0xb9`) to
       detect the end of the instruction list, and `CP n` (`0xfe`) is used throughout.
+- [ ] **`call` pushes the wrong return address** (`call()` macro): it pushes `pc` before reading
+      the 2 address bytes, so the return address points at the low address byte instead of the
+      next instruction. Read `lo`/`hi` first, then push.
+- [ ] **`jp_abs` / `call` don't skip the address bytes when the condition is false**: the reads
+      are inside `if (cond)`, so `pc` is left on the address bytes and they get executed as
+      opcodes. Read both bytes before the `if` (the first `jp_abs` in `3bf2d29` did this; it
+      broke in `03c253f`).
+- [ ] **`0xdc` (CALL C) tests all of F**: `call(gb->f)` should be `call(gb->f & GB_FLAG_C)`.
+- [ ] **`0xf0` (LDH A,(a8)) never reads memory**: `a` is set to the address itself. Should be
+      `gb->a = gb_mem_read(gb, 0xff00 | gb_mem_read(gb, gb->pc++));`. The framework polls LY
+      (`$FF44`) with this.
+- [ ] **`0x1f` (RRA) doesn't rotate the old carry into bit 7**: it's a plain shift right. Should be
+      `gb->a = (gb->a >> 1) | ((gb->f & GB_FLAG_C) << 3);` (flags are already correct).
 
 ## 2. Opcodes still to implement
 
@@ -20,12 +33,7 @@ Cycle counts are in M-cycles, the same unit as the rest of `gb_cpu_step`.
 
 ### Base opcodes
 
-**TODO:** Check with cc to review the implemented instructions
-
-| Opcode | Instruction | Cycles | Notes |
-| ------ | ----------- | ------ | --------------------------------------------------------------------------- |
-| `FE` | CP n | 2 | like SUB but `a` unchanged (Z = `a == n`) |
-| `F3` | DI | 1 | Can be a no-op until interrupts exist. |
+All implemented. The Nov 3 opcodes were reviewed, and the bugs found are listed in section 1.
 
 ### CB-prefixed (`CB` itself needs a second-level dispatch)
 

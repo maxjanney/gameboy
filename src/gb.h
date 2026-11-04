@@ -19,6 +19,8 @@ struct GameBoy {
         };
     };
 
+    u8 ime;
+
     u8 oam[0xa0];
     u8 wram[0x2000];
     u8 hram[0x7f];
