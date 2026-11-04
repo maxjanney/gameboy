@@ -29,8 +29,6 @@ Check with cc to review the implemented instructions
 | `E6` | AND n | 2 | Z, N=0, H=1, C=0 |
 | `EE` | XOR n | 2 | Z, others 0 |
 | `FE` | CP n | 2 | like SUB but `a` unchanged (Z = `a == n`) |
-| `F0` | LDH A,(n) | 3 | `a = read(0xff00 \| n)` |
-| `FA` | LD A,(nn) | 4 | |
 | `F3` | DI | 1 | Can be a no-op until interrupts exist. |
 
 ### CB-prefixed (`CB` itself needs a second-level dispatch)

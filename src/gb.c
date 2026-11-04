@@ -631,7 +631,10 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xee: todo_opcode();
     case 0xef: todo_opcode();
 
-    case 0xf0: todo_opcode();
+    case 0xf0: {
+        gb->a = 0xff00 | gb_mem_read(gb, gb->pc++);
+        return 3;
+    }
     case 0xf1: {
         u8 lo = gb_mem_read(gb, gb->sp++);
         u8 hi = gb_mem_read(gb, gb->sp++);
@@ -647,7 +650,12 @@ int gb_cpu_step(GameBoy *gb) {
 
     case 0xf8: todo_opcode();
     case 0xf9: todo_opcode();
-    case 0xfa: todo_opcode();
+    case 0xfa: {
+        u8 lo = gb_mem_read(gb, gb->pc++);
+        u8 hi = gb_mem_read(gb, gb->pc++);
+        gb->a = gb_mem_read(gb, ((u16)hi << 8) | lo);
+        return 4;
+    }
     case 0xfb: todo_opcode();
     case 0xfc: todo_opcode();
     case 0xfd: todo_opcode();
