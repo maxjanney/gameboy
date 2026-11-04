@@ -20,13 +20,10 @@ Cycle counts are in M-cycles, the same unit as the rest of `gb_cpu_step`.
 
 ### Base opcodes
 
-Check with cc to review the implemented instructions
+**TODO:** Check with cc to review the implemented instructions
 
 | Opcode | Instruction | Cycles | Notes |
 | ------ | ----------- | ------ | --------------------------------------------------------------------------- |
-| `C6` | ADD A,n | 2 | same flags as `add_a_r` |
-| `CE` | ADC A,n | 2 | same flags as `adc_a_r` |
-| `D6` | SUB n | 2 | same flags as `sub_a_r` |
 | `E6` | AND n | 2 | Z, N=0, H=1, C=0 |
 | `EE` | XOR n | 2 | Z, others 0 |
 | `FE` | CP n | 2 | like SUB but `a` unchanged (Z = `a == n`) |

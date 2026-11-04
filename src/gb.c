@@ -118,27 +118,17 @@ close_file:
     return 2;           \
 }
 
-#define add_a_r(r) {                            \
-    u16 res = gb->a + gb->r;                    \
-    u8 h = (gb->a & 0xf) + (gb->r & 0xf) > 0xf; \
+// val_expr must be evaluated exactly once (it may be a mem read / pc++)
+#define add_a(val_expr, cycles) {               \
+    u8 val = (val_expr);                        \
+    u16 res = gb->a + val;                      \
+    u8 h = (gb->a & 0xf) + (val & 0xf) > 0xf;   \
     gb->a = (u8)res;                            \
     gb->f = ((gb->a == 0) << 7) | /* Z */       \
             /* N = 0 */                         \
             (h << 5) | /* H */                  \
             ((res > 0xff) << 4); /* C */        \
-    return 1;                                   \
-}
-
-#define add_a_hl() {                            \
-    u8 val = gb_mem_read(gb, gb->hl);           \
-    u16 res = val + gb->a;                      \
-    u8 h = (gb->a & 0xf) + (val & 0xf) > 0xf;   \
-    gb->a = res;                                \
-    gb->f = ((gb->a == 0) << 7) | /* Z */       \
-            /* N = 0 */                         \
-            (h << 5) | /* H */                  \
-            ((res > 0xff) << 4); /* C */        \
-    return 2;                                   \
+    return (cycles);                            \
 }
 
 #define add_hl_rr(rr) {                                 \
@@ -153,44 +143,23 @@ close_file:
     return 2;                                           \
 }
 
-#define adc_a_r(r) {                                        \
-    u8 c = (gb->f & GB_FLAG_C) >> 4;                        \
-    u16 res = gb->a + gb->r + c;                            \
-    u8 h = (gb->a & 0xf) + (gb->r & 0xf) + (c & 0xf) > 0xf; \
-    gb->a = res;                                            \
-    gb->f = ((gb->a == 0) << 7) | /* Z */                   \
-            /* N = 0 */                                     \
-            (h << 5) | /* H */                              \
-            ((res > 0xff) << 4); /* C */                    \
-    return 1;                                               \
+// val_expr must be evaluated exactly once (it may be a mem read / pc++)
+#define adc_a(val_expr, cycles) {                       \
+    u8 val = (val_expr);                                \
+    u8 c = (gb->f & GB_FLAG_C) >> 4;                    \
+    u16 res = gb->a + val + c;                          \
+    u8 h = (gb->a & 0xf) + (val & 0xf) + c > 0xf;       \
+    gb->a = (u8)res;                                    \
+    gb->f = ((gb->a == 0) << 7) | /* Z */               \
+            /* N = 0 */                                 \
+            (h << 5) | /* H */                          \
+            ((res > 0xff) << 4); /* C */                \
+    return (cycles);                                    \
 }
 
-#define adc_a_hl() {                                        \
-    u8 val = gb_mem_read(gb, gb->hl);                       \
-    u8 c = (gb->f & GB_FLAG_C) >> 4;                        \
-    u16 res = gb->a + val + c;                              \
-    u8 h = (gb->a & 0xf) + (val & 0xf) + (c & 0xf) > 0xf;   \
-    gb->a = res;                                            \
-    gb->f = ((gb->a == 0) << 7) | /* Z */                   \
-            /* N = 0 */                                     \
-            (h << 5) | /* H */                              \
-            ((res > 0xff) << 4); /* C */                    \
-    return 2;                                               \
-}
-
-#define sub_a_r(r) {                                        \
-    u8 c = gb->r > gb->a;                                   \
-    u8 h = (((gb->a & 0xf) - (gb->r & 0xf)) & 0x10) != 0;   \
-    gb->a -= gb->r;                                         \
-    gb->f = ((gb->a == 0) << 7) | /* Z */                   \
-            GB_FLAG_N | /* N = 1 */                         \
-            (h << 5) | /* H */                              \
-            (c << 4); /* C */                               \
-    return 1;                                               \
-}
-
-#define sub_a_hl() {                                    \
-    u8 val = gb_mem_read(gb, gb->hl);                   \
+// val_expr must be evaluated exactly once (it may be a mem read / pc++)
+#define sub_a(val_expr, cycles) {                       \
+    u8 val = (val_expr);                                \
     u8 c = val > gb->a;                                 \
     u8 h = (((gb->a & 0xf) - (val & 0xf)) & 0x10) != 0; \
     gb->a -= val;                                       \
@@ -198,7 +167,7 @@ close_file:
             GB_FLAG_N | /* N = 1 */                     \
             (h << 5) | /* H */                          \
             (c << 4); /* C */                           \
-    return 2;                                           \
+    return (cycles);                                    \
 }
 
 #define and_a_r(r) {                            \
@@ -491,32 +460,32 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x7e: ld_r_hl(a);
     case 0x7f: ld_r_r(a, a);
 
-    case 0x80: add_a_r(b);
-    case 0x81: add_a_r(c);
-    case 0x82: add_a_r(d);
-    case 0x83: add_a_r(e);
-    case 0x84: add_a_r(h);
-    case 0x85: add_a_r(l);
-    case 0x86: add_a_hl();
-    case 0x87: add_a_r(a);
+    case 0x80: add_a(gb->b, 1);
+    case 0x81: add_a(gb->c, 1);
+    case 0x82: add_a(gb->d, 1);
+    case 0x83: add_a(gb->e, 1);
+    case 0x84: add_a(gb->h, 1);
+    case 0x85: add_a(gb->l, 1);
+    case 0x86: add_a(gb_mem_read(gb, gb->hl), 2);
+    case 0x87: add_a(gb->a, 1);
 
-    case 0x88: adc_a_r(b);
-    case 0x89: adc_a_r(c);
-    case 0x8a: adc_a_r(d);
-    case 0x8b: adc_a_r(e);
-    case 0x8c: adc_a_r(h);
-    case 0x8d: adc_a_r(l);
-    case 0x8e: adc_a_hl();
-    case 0x8f: adc_a_r(a);
+    case 0x88: adc_a(gb->b, 1);
+    case 0x89: adc_a(gb->c, 1);
+    case 0x8a: adc_a(gb->d, 1);
+    case 0x8b: adc_a(gb->e, 1);
+    case 0x8c: adc_a(gb->h, 1);
+    case 0x8d: adc_a(gb->l, 1);
+    case 0x8e: adc_a(gb_mem_read(gb, gb->hl), 2);
+    case 0x8f: adc_a(gb->a, 1);
 
-    case 0x90: sub_a_r(b);
-    case 0x91: sub_a_r(c);
-    case 0x92: sub_a_r(d);
-    case 0x93: sub_a_r(e);
-    case 0x94: sub_a_r(h);
-    case 0x95: sub_a_r(l);
-    case 0x96: sub_a_hl();
-    case 0x97: sub_a_r(a);
+    case 0x90: sub_a(gb->b, 1);
+    case 0x91: sub_a(gb->c, 1);
+    case 0x92: sub_a(gb->d, 1);
+    case 0x93: sub_a(gb->e, 1);
+    case 0x94: sub_a(gb->h, 1);
+    case 0x95: sub_a(gb->l, 1);
+    case 0x96: sub_a(gb_mem_read(gb, gb->hl), 2);
+    case 0x97: sub_a(gb->a, 1);
 
     case 0x98: todo_opcode();
     case 0x99: todo_opcode();
@@ -569,7 +538,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xc3: jp_abs(1);
     case 0xc4: call(!(gb->f & GB_FLAG_Z));
     case 0xc5: push_rr(b, c);
-    case 0xc6: todo_opcode();
+    case 0xc6: add_a(gb_mem_read(gb, gb->pc++), 2);
     case 0xc7: todo_opcode();
 
     case 0xc8: ret(gb->f & GB_FLAG_Z);
@@ -583,7 +552,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xcb: todo_opcode();
     case 0xcc: call(gb->f & GB_FLAG_Z);
     case 0xcd: call(1);
-    case 0xce: todo_opcode();
+    case 0xce: adc_a(gb_mem_read(gb, gb->pc++), 2);
     case 0xcf: todo_opcode();
 
     case 0xd0: ret(!(gb->f & GB_FLAG_C));
@@ -592,7 +561,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xd3: todo_opcode();
     case 0xd4: call(!(gb->f & GB_FLAG_C));
     case 0xd5: push_rr(d, e);
-    case 0xd6: todo_opcode();
+    case 0xd6: sub_a(gb_mem_read(gb, gb->pc++), 2);
     case 0xd7: todo_opcode();
 
     case 0xd8: ret(gb->f & GB_FLAG_C);
