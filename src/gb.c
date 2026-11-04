@@ -170,28 +170,18 @@ close_file:
     return (cycles);                                    \
 }
 
-#define and_a_r(r) {                            \
-    gb->a &= gb->r;                             \
+// val_expr must be evaluated exactly once (it may be a mem read / pc++)
+#define and_a(val_expr, cycles) {               \
+    gb->a &= (val_expr);                        \
     gb->f = ((gb->a == 0) << 7) | GB_FLAG_H;    \
-    return 1;                                   \
+    return (cycles);                            \
 }
 
-#define and_a_hl() {                            \
-    gb->a &= gb_mem_read(gb, gb->hl);           \
-    gb->f = ((gb->a == 0) << 7) | GB_FLAG_H;    \
-    return 2;                                   \
-}
-
-#define xor_a_r(r) {            \
-    gb->a ^= gb->r;             \
-    gb->f = (gb->a == 0) << 7;  \
-    return 1;                   \
-}
-
-#define xor_a_hl() {                     \
-    gb->a ^= gb_mem_read(gb, gb->hl);   \
-    gb->f = (gb->a == 0) << 7;          \
-    return 2;                           \
+// val_expr must be evaluated exactly once (it may be a mem read / pc++)
+#define xor_a(val_expr, cycles) {   \
+    gb->a ^= (val_expr);            \
+    gb->f = (gb->a == 0) << 7;      \
+    return (cycles);                \
 }
 
 #define or_a_r(r) {             \
@@ -496,23 +486,23 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x9e: todo_opcode();
     case 0x9f: todo_opcode();
 
-    case 0xa0: and_a_r(b);
-    case 0xa1: and_a_r(c);
-    case 0xa2: and_a_r(d);
-    case 0xa3: and_a_r(e);
-    case 0xa4: and_a_r(h);
-    case 0xa5: and_a_r(l);
-    case 0xa6: and_a_hl();
-    case 0xa7: and_a_r(a);
+    case 0xa0: and_a(gb->b, 1);
+    case 0xa1: and_a(gb->c, 1);
+    case 0xa2: and_a(gb->d, 1);
+    case 0xa3: and_a(gb->e, 1);
+    case 0xa4: and_a(gb->h, 1);
+    case 0xa5: and_a(gb->l, 1);
+    case 0xa6: and_a(gb_mem_read(gb, gb->hl), 2);
+    case 0xa7: and_a(gb->a, 1);
 
-    case 0xa8: xor_a_r(b);
-    case 0xa9: xor_a_r(c);
-    case 0xaa: xor_a_r(d);
-    case 0xab: xor_a_r(e);
-    case 0xac: xor_a_r(h);
-    case 0xad: xor_a_r(l);
-    case 0xae: xor_a_hl();
-    case 0xaf: xor_a_r(a);
+    case 0xa8: xor_a(gb->b, 1);
+    case 0xa9: xor_a(gb->c, 1);
+    case 0xaa: xor_a(gb->d, 1);
+    case 0xab: xor_a(gb->e, 1);
+    case 0xac: xor_a(gb->h, 1);
+    case 0xad: xor_a(gb->l, 1);
+    case 0xae: xor_a(gb_mem_read(gb, gb->hl), 2);
+    case 0xaf: xor_a(gb->a, 1);
 
     case 0xb0: or_a_r(b);
     case 0xb1: or_a_r(c);
@@ -583,7 +573,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xe3: todo_opcode();
     case 0xe4: todo_opcode();
     case 0xe5: push_rr(h, l);
-    case 0xe6: todo_opcode();
+    case 0xe6: and_a(gb_mem_read(gb, gb->pc++), 2);
     case 0xe7: todo_opcode();
 
     case 0xe8: todo_opcode();
@@ -597,7 +587,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xeb: todo_opcode();
     case 0xec: todo_opcode();
     case 0xed: todo_opcode();
-    case 0xee: todo_opcode();
+    case 0xee: xor_a(gb_mem_read(gb, gb->pc++), 2);
     case 0xef: todo_opcode();
 
     case 0xf0: {

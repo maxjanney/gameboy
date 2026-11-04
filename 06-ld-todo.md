@@ -24,8 +24,6 @@ Cycle counts are in M-cycles, the same unit as the rest of `gb_cpu_step`.
 
 | Opcode | Instruction | Cycles | Notes |
 | ------ | ----------- | ------ | --------------------------------------------------------------------------- |
-| `E6` | AND n | 2 | Z, N=0, H=1, C=0 |
-| `EE` | XOR n | 2 | Z, others 0 |
 | `FE` | CP n | 2 | like SUB but `a` unchanged (Z = `a == n`) |
 | `F3` | DI | 1 | Can be a no-op until interrupts exist. |
 
