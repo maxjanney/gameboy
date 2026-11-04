@@ -21,6 +21,7 @@ Cycle counts are in M-cycles, the same unit as the rest of `gb_cpu_step`.
 ### Base opcodes
 
 Check with cc to review the implemented instructions
+
 | Opcode | Instruction | Cycles | Notes |
 | ------ | ----------- | ------ | --------------------------------------------------------------------------- |
 | `C6` | ADD A,n | 2 | same flags as `add_a_r` |
@@ -42,17 +43,6 @@ All are 2 M-cycles.
 | `CB 1B` | RR E        | same                                              |
 | `CB 37` | SWAP A      | Z from result, N=0, H=0, C=0                      |
 | `CB 38` | SRL B       | Z from result, N=0, H=0, C = old bit 0, bit 7 = 0 |
-
-### Already done (needed by the test)
-
-`00-0F`, `11-1E`, `20-3F`, `40-7F` (except `76`), `81`, `91`, `A9`, `AE`, `AF`, `B0`, `B1`, `B6`,
-`B7`, `B9`, `C1`, `C5`, `D5`, `E0`, `E1`, `E5`, `EA`, `F1`, `F5`
-
-### Not needed, as long as A = `$01` at boot (`gb_init` already does this)
-
-- `10` STOP, and reads/writes of `$FF00`, `$FF4D`, `$FF4F`, `$FF68`/`$FF69` and reads of `$FFFF`.
-  These only run on CGB, and the ROM picks the path from A at reset.
-- HALT, EI, RETI, RST and interrupts are never used.
 
 ## 3. Memory regions
 
@@ -79,10 +69,3 @@ Unused, can return `0xFF` and ignore writes: `A000–BFFF` (cart RAM), `E000–F
 | `FF07` TAC, `FF0F` IF, `FF24` NR50, `FF25` NR51, `FF26` NR52, `FF40` LCDC, `FF42` SCY, `FF43` SCX, `FF47` BGP |     | W   | Write-only setup. Storing them in `io_regs` (or ignoring them) is fine.                                                                   |
 
 `gb_io_write` exists but isn't called from `gb_mem_write` yet, and there's no `gb_io_read` for LY.
-
-## 4. Knowing when it's finished
-
-The serial output will be `06-ld r,r\n\n\nPassed\n` or, on failure, the failing opcodes and then
-`Failed`. Afterwards the ROM sits in an infinite `jr` loop, so the main loop should stop once it
-sees `Passed`/`Failed` on serial, or after a cycle cap. The startup also runs `delay_msec 250`,
-which is roughly 260k M-cycles of looping before the test starts.
