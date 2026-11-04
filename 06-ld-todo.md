@@ -23,10 +23,6 @@ Cycle counts are in M-cycles, the same unit as the rest of `gb_cpu_step`.
 Check with cc to review the implemented instructions
 | Opcode | Instruction | Cycles | Notes |
 | ------ | ----------- | ------ | --------------------------------------------------------------------------- |
-| `C9` | RET | 4 | |
-| `C8` | RET Z | 5 / 2 | taken / not taken |
-| `D0` | RET NC | 5 / 2 | |
-| `D8` | RET C | 5 / 2 | |
 | `C6` | ADD A,n | 2 | same flags as `add_a_r` |
 | `CE` | ADC A,n | 2 | same flags as `adc_a_r` |
 | `D6` | SUB n | 2 | same flags as `sub_a_r` |
