@@ -45,9 +45,9 @@ close_file:
 #define GB_FLAG_H (1 << 5)
 #define GB_FLAG_C (1 << 4)
 
-#define todo_opcode() {                                                     \
-    fprintf(stderr, "Unimplemented opcode encountered: 0x%02X\n", opcode);  \
-    abort();                                                                \
+#define todo_opcode() {                                                 \
+    fprintf(stderr, "Unimplemented opcode encountered: 0x%02X\n", op);  \
+    abort();                                                            \
 }
 
 #define ld_r_u8(r) {                    \
@@ -265,8 +265,8 @@ close_file:
 }
 
 int gb_cpu_step(GameBoy *gb) {
-    u8 opcode = gb_mem_read(gb, gb->pc++);
-    switch (opcode) {
+    u8 op = gb_mem_read(gb, gb->pc++);
+    switch (op) {
     case 0x00: return 1;
     case 0x01: ld_rr_u16(bc);
     case 0x02: ld_addr_a(gb->bc);
@@ -532,7 +532,7 @@ int gb_cpu_step(GameBoy *gb) {
         return 4;
     }
     case 0xca: jp_abs(gb->f & GB_FLAG_Z);
-    case 0xcb: todo_opcode();
+    case 0xcb: return gb_cb_prefix(gb);
     case 0xcc: call(gb->f & GB_FLAG_Z);
     case 0xcd: call(1);
     case 0xce: adc_a(gb_mem_read(gb, gb->pc++), 2);
@@ -615,6 +615,46 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xff: todo_opcode();
     default: todo_opcode();
     }
+}
+
+#define rr_r(r) {                                       \
+    u8 b = gb->r & 0x01;                                \
+    gb->r = ((gb->f & GB_FLAG_C) << 3) | (gb->r >> 1);  \
+    gb->f = ((gb->r == 0) << 7) | (b << 4);             \
+    return 2;                                           \
+}
+
+#define swap_r(r) {                     \
+    u8 lo = gb->r & 0xf;                \
+    gb->r = (lo << 4) | (gb->r >> 4);   \
+    gb->f = (gb->r == 0) << 7;          \
+    return 2;                           \
+}
+
+static int gb_cb_prefix(GameBoy *gb) {
+    u8 op = gb_mem_read(gb, gb->pc++);
+    switch (op) {
+    case 0x18: rr_r(b);
+    case 0x19: rr_r(c);
+    case 0x1a: rr_r(d);
+    case 0x1b: rr_r(e);
+    case 0x1c: rr_r(h);
+    case 0x1d: rr_r(l);
+    case 0x1e: todo_opcode();
+    case 0x1f: rr_r(a);
+
+    case 0x30: swap_r(b);
+    case 0x31: swap_r(c);
+    case 0x32: swap_r(d);
+    case 0x33: swap_r(e);
+    case 0x34: swap_r(h);
+    case 0x35: swap_r(l);
+    case 0x36: todo_opcode();
+    case 0x37: swap_r(a);
+
+    default: todo_opcode();
+    }
+    return 0;
 }
 
 void gb_free(GameBoy *gb) {

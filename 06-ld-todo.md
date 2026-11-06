@@ -33,7 +33,7 @@ Cycle counts are in M-cycles, the same unit as the rest of `gb_cpu_step`.
 
 ### Base opcodes
 
-All implemented. The Nov 3 opcodes were reviewed, and the bugs found are listed in section 1.
+All implemented. The Nov 3 opcodes were reviewed, and the bugs found are fixed in section 1.
 
 ### CB-prefixed (`CB` itself needs a second-level dispatch)
 
@@ -41,10 +41,10 @@ All are 2 M-cycles.
 
 | Opcode  | Instruction | Flags                                             |
 | ------- | ----------- | ------------------------------------------------- |
-| `CB 19` | RR C        | Z from result, N=0, H=0, C = old bit 0            |
-| `CB 1A` | RR D        | same                                              |
-| `CB 1B` | RR E        | same                                              |
-| `CB 37` | SWAP A      | Z from result, N=0, H=0, C=0                      |
+| ~~`CB 19`~~ | ~~RR C~~        | ~~Z from result, N=0, H=0, C = old bit 0~~            |
+| ~~`CB 1A`~~ | ~~RR D~~        | ~~same~~                                              |
+| ~~`CB 1B`~~ | ~~RR E~~        | ~~same~~                                              |
+| ~~`CB 37`~~ | ~~SWAP A~~      | ~~Z from result, N=0, H=0, C=0~~                      |
 | `CB 38` | SRL B       | Z from result, N=0, H=0, C = old bit 0, bit 7 = 0 |
 
 ## 3. Memory regions
