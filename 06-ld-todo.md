@@ -20,11 +20,11 @@ tables, checksums, console, and serial output).
       are inside `if (cond)`, so `pc` is left on the address bytes and they get executed as
       opcodes. Read both bytes before the `if` (the first `jp_abs` in `3bf2d29` did this; it
       broke in `03c253f`).
-- [ ] **`0xdc` (CALL C) tests all of F**: `call(gb->f)` should be `call(gb->f & GB_FLAG_C)`.
-- [ ] **`0xf0` (LDH A,(a8)) never reads memory**: `a` is set to the address itself. Should be
+- [x] **`0xdc` (CALL C) tests all of F**: `call(gb->f)` should be `call(gb->f & GB_FLAG_C)`.
+- [x] **`0xf0` (LDH A,(a8)) never reads memory**: `a` is set to the address itself. Should be
       `gb->a = gb_mem_read(gb, 0xff00 | gb_mem_read(gb, gb->pc++));`. The framework polls LY
       (`$FF44`) with this.
-- [ ] **`0x1f` (RRA) doesn't rotate the old carry into bit 7**: it's a plain shift right. Should be
+- [x] **`0x1f` (RRA) doesn't rotate the old carry into bit 7**: it's a plain shift right. Should be
       `gb->a = (gb->a >> 1) | ((gb->f & GB_FLAG_C) << 3);` (flags are already correct).
 
 ## 2. Opcodes still to implement
