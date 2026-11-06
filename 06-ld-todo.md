@@ -13,10 +13,10 @@ tables, checksums, console, and serial output).
 - [x] **CP sets Z wrong** (`cp_a_r`, `cp_a_hl`): Z is set from `gb->a == 0`, but CP should set Z
       when `a - r == 0`, i.e. when `a == r`. The framework's main loop uses `CP C` (`0xb9`) to
       detect the end of the instruction list, and `CP n` (`0xfe`) is used throughout.
-- [ ] **`call` pushes the wrong return address** (`call()` macro): it pushes `pc` before reading
+- [x] **`call` pushes the wrong return address** (`call()` macro): it pushes `pc` before reading
       the 2 address bytes, so the return address points at the low address byte instead of the
       next instruction. Read `lo`/`hi` first, then push.
-- [ ] **`jp_abs` / `call` don't skip the address bytes when the condition is false**: the reads
+- [x] **`jp_abs` / `call` don't skip the address bytes when the condition is false**: the reads
       are inside `if (cond)`, so `pc` is left on the address bytes and they get executed as
       opcodes. Read both bytes before the `if` (the first `jp_abs` in `3bf2d29` did this; it
       broke in `03c253f`).

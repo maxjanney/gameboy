@@ -237,18 +237,20 @@ close_file:
         gb->pc = ((u16)hi << 8) | lo;       \
         return 4;                           \
     }                                       \
+    gb->pc += 2;                            \
     return 3;                               \
 }
 
 #define call(cond) {                                \
     if (cond) {                                     \
-        gb_mem_write(gb, --gb->sp, gb->pc >> 8);    \
-        gb_mem_write(gb, --gb->sp, gb->pc);         \
         u8 lo = gb_mem_read(gb, gb->pc++);          \
         u8 hi = gb_mem_read(gb, gb->pc++);          \
+        gb_mem_write(gb, --gb->sp, gb->pc >> 8);    \
+        gb_mem_write(gb, --gb->sp, gb->pc);         \
         gb->pc = ((u16)hi << 8) | lo;               \
         return 6;                                   \
     }                                               \
+    gb->pc += 2;                                    \
     return 3;                                       \
 }
 
