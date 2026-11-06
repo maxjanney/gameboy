@@ -34,7 +34,6 @@ void gb_init(GameBoy *, SerialCallback);
 int gb_load_rom(GameBoy *, const char *);
 void gb_free(GameBoy *);
 
-static int gb_cb_prefix(GameBoy *);
 int gb_cpu_step(GameBoy *);
 
 void gb_mem_write(GameBoy *, u16, u8);

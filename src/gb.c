@@ -264,6 +264,8 @@ close_file:
     return 2;                               \
 }
 
+static int gb_cb_prefix(GameBoy *);
+
 int gb_cpu_step(GameBoy *gb) {
     u8 op = gb_mem_read(gb, gb->pc++);
     switch (op) {
@@ -631,6 +633,13 @@ int gb_cpu_step(GameBoy *gb) {
     return 2;                           \
 }
 
+#define srl_r(r) {                          \
+    u8 c = gb->r & 0x01;                    \
+    gb->r = (gb->r >> 1) & 0x7f;            \
+    gb->f = ((gb->r == 0) << 7) | (c << 4); \
+    return 2;                               \
+}
+
 static int gb_cb_prefix(GameBoy *gb) {
     u8 op = gb_mem_read(gb, gb->pc++);
     switch (op) {
@@ -651,6 +660,15 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x35: swap_r(l);
     case 0x36: todo_opcode();
     case 0x37: swap_r(a);
+
+    case 0x38: srl_r(b);
+    case 0x39: srl_r(c);
+    case 0x3a: srl_r(d);
+    case 0x3b: srl_r(e);
+    case 0x3c: srl_r(h);
+    case 0x3d: srl_r(l);
+    case 0x3e: todo_opcode();
+    case 0x3f: srl_r(a);
 
     default: todo_opcode();
     }

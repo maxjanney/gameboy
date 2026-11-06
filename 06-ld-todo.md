@@ -45,7 +45,7 @@ All are 2 M-cycles.
 | ~~`CB 1A`~~ | ~~RR D~~        | ~~same~~                                              |
 | ~~`CB 1B`~~ | ~~RR E~~        | ~~same~~                                              |
 | ~~`CB 37`~~ | ~~SWAP A~~      | ~~Z from result, N=0, H=0, C=0~~                      |
-| `CB 38` | SRL B       | Z from result, N=0, H=0, C = old bit 0, bit 7 = 0 |
+| ~~`CB 38`~~ | ~~SRL B~~       | ~~Z from result, N=0, H=0, C = old bit 0, bit 7 = 0~~ |
 
 ## 3. Memory regions
 
