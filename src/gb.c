@@ -345,7 +345,11 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x2c: inc_r(l);
     case 0x2d: dec_r(l);
     case 0x2e: ld_r_u8(l);
-    case 0x2f: todo_opcode();
+    case 0x2f: {
+        gb->a = ~gb->a;
+        gb->f |= GB_FLAG_N | GB_FLAG_H;
+        return 1;
+    }
 
     case 0x30: jr_rel(!(gb->f & GB_FLAG_C));
     case 0x31: ld_rr_u16(sp);
