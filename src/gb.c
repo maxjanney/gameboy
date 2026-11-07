@@ -684,18 +684,15 @@ void gb_free(GameBoy *gb) {
 }
 
 static u8 gb_read_rom(GameBoy *gb, u16 addr) {
-    (void)gb, (void)addr;
-    return 0;
+    return gb->rom[addr & 0x7fff];
 }
 
 static u8 gb_read_vram(GameBoy *gb, u16 addr) {
-    (void)gb, (void)addr;
-    return 0;
+    return gb->vram[addr & 0x1fff];
 }
 
 static u8 gb_read_wram(GameBoy *gb, u16 addr) {
-    (void)gb, (void)addr;
-    return 0;
+    return gb->wram[addr & 0x1fff];
 }
 
 static u8 gb_read_high(GameBoy *gb, u16 addr) {
