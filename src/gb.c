@@ -50,6 +50,62 @@ close_file:
     abort();                                                            \
 }
 
+#define rr_r(r) {                                       \
+    u8 b = gb->r & 0x01;                                \
+    gb->r = ((gb->f & GB_FLAG_C) << 3) | (gb->r >> 1);  \
+    gb->f = ((gb->r == 0) << 7) | (b << 4);             \
+    return 2;                                           \
+}
+
+#define swap_r(r) {                     \
+    u8 lo = gb->r & 0xf;                \
+    gb->r = (lo << 4) | (gb->r >> 4);   \
+    gb->f = (gb->r == 0) << 7;          \
+    return 2;                           \
+}
+
+#define srl_r(r) {                          \
+    u8 c = gb->r & 0x01;                    \
+    gb->r = (gb->r >> 1) & 0x7f;            \
+    gb->f = ((gb->r == 0) << 7) | (c << 4); \
+    return 2;                               \
+}
+
+static int gb_cb_prefix(GameBoy *gb) {
+    u8 op = gb_mem_read(gb, gb->pc++);
+    switch (op) {
+    case 0x18: rr_r(b);
+    case 0x19: rr_r(c);
+    case 0x1a: rr_r(d);
+    case 0x1b: rr_r(e);
+    case 0x1c: rr_r(h);
+    case 0x1d: rr_r(l);
+    case 0x1e: todo_opcode();
+    case 0x1f: rr_r(a);
+
+    case 0x30: swap_r(b);
+    case 0x31: swap_r(c);
+    case 0x32: swap_r(d);
+    case 0x33: swap_r(e);
+    case 0x34: swap_r(h);
+    case 0x35: swap_r(l);
+    case 0x36: todo_opcode();
+    case 0x37: swap_r(a);
+
+    case 0x38: srl_r(b);
+    case 0x39: srl_r(c);
+    case 0x3a: srl_r(d);
+    case 0x3b: srl_r(e);
+    case 0x3c: srl_r(h);
+    case 0x3d: srl_r(l);
+    case 0x3e: todo_opcode();
+    case 0x3f: srl_r(a);
+
+    default: todo_opcode();
+    }
+    return 0;
+}
+
 #define ld_r_u8(r) {                    \
     gb->r = gb_mem_read(gb, gb->pc++);  \
     return 2;                           \
@@ -262,9 +318,7 @@ close_file:
         return 5;                           \
     }                                       \
     return 2;                               \
-}
-
-static int gb_cb_prefix(GameBoy *);
+} 
 
 int gb_cpu_step(GameBoy *gb) {
     u8 op = gb_mem_read(gb, gb->pc++);
@@ -623,75 +677,55 @@ int gb_cpu_step(GameBoy *gb) {
     }
 }
 
-#define rr_r(r) {                                       \
-    u8 b = gb->r & 0x01;                                \
-    gb->r = ((gb->f & GB_FLAG_C) << 3) | (gb->r >> 1);  \
-    gb->f = ((gb->r == 0) << 7) | (b << 4);             \
-    return 2;                                           \
-}
-
-#define swap_r(r) {                     \
-    u8 lo = gb->r & 0xf;                \
-    gb->r = (lo << 4) | (gb->r >> 4);   \
-    gb->f = (gb->r == 0) << 7;          \
-    return 2;                           \
-}
-
-#define srl_r(r) {                          \
-    u8 c = gb->r & 0x01;                    \
-    gb->r = (gb->r >> 1) & 0x7f;            \
-    gb->f = ((gb->r == 0) << 7) | (c << 4); \
-    return 2;                               \
-}
-
-static int gb_cb_prefix(GameBoy *gb) {
-    u8 op = gb_mem_read(gb, gb->pc++);
-    switch (op) {
-    case 0x18: rr_r(b);
-    case 0x19: rr_r(c);
-    case 0x1a: rr_r(d);
-    case 0x1b: rr_r(e);
-    case 0x1c: rr_r(h);
-    case 0x1d: rr_r(l);
-    case 0x1e: todo_opcode();
-    case 0x1f: rr_r(a);
-
-    case 0x30: swap_r(b);
-    case 0x31: swap_r(c);
-    case 0x32: swap_r(d);
-    case 0x33: swap_r(e);
-    case 0x34: swap_r(h);
-    case 0x35: swap_r(l);
-    case 0x36: todo_opcode();
-    case 0x37: swap_r(a);
-
-    case 0x38: srl_r(b);
-    case 0x39: srl_r(c);
-    case 0x3a: srl_r(d);
-    case 0x3b: srl_r(e);
-    case 0x3c: srl_r(h);
-    case 0x3d: srl_r(l);
-    case 0x3e: todo_opcode();
-    case 0x3f: srl_r(a);
-
-    default: todo_opcode();
-    }
-    return 0;
-}
-
 void gb_free(GameBoy *gb) {
     if (!gb) return;
     free(gb->rom);
     gb->rom = NULL;
 }
 
-void gb_mem_write(GameBoy *gb, u16 addr, u8 val) {
-    (void)gb, (void)addr, (void)val;
+static u8 gb_read_rom(GameBoy *gb, u16 addr) {
+    (void)gb, (void)addr;
+    return 0;
 }
+
+static u8 gb_read_vram(GameBoy *gb, u16 addr) {
+    (void)gb, (void)addr;
+    return 0;
+}
+
+static u8 gb_read_wram(GameBoy *gb, u16 addr) {
+    (void)gb, (void)addr;
+    return 0;
+}
+
+static u8 gb_read_high(GameBoy *gb, u16 addr) {
+    (void)gb, (void)addr;
+    return 0;
+}
+
+typedef u8 (*MemReadFunc)(GameBoy *, u16);
+static MemReadFunc mem_read_map[16] = {
+    // 0x0000 - 0x7fff. Assuming no mbc for now
+    gb_read_rom, gb_read_rom, gb_read_rom, gb_read_rom, gb_read_rom, gb_read_rom, gb_read_rom, gb_read_rom,
+    // 0x8000 - 0x9fff
+    gb_read_vram, gb_read_vram,
+    // 0xa000 - 0xbfff. Skipping for now
+    NULL, NULL,
+    // 0xc000 - 0xdfff
+    gb_read_wram, gb_read_wram,
+    // 0xe000 - 0xefff
+    gb_read_wram,
+    // 0xf000 - 0xffff
+    gb_read_high
+};
 
 u8 gb_mem_read(GameBoy *gb, u16 addr) {
     (void)gb, (void)addr;
     return 0;
+}
+
+void gb_mem_write(GameBoy *gb, u16 addr, u8 val) {
+    (void)gb, (void)addr, (void)val;
 }
 
 #define GB_IO_SB   0x01
