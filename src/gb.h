@@ -26,6 +26,8 @@ struct GameBoy {
     u8 hram[0x7f];
 
     u8 *rom;
+    size_t rom_len;
+    
     u8 io_regs[0x80];
     SerialCallback serial_io;
 };

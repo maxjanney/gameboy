@@ -26,7 +26,7 @@ int gb_load_rom(GameBoy *gb, const char *path) {
     if (gb->rom) free(gb->rom);
     gb->rom = malloc(n);
     if (!gb->rom) goto close_file;
-
+    gb->rom_len = n;
     size_t nread = fread(gb->rom, 1, n, f);
     if (!nread && ferror(f)) goto free_rom;
 
@@ -720,8 +720,7 @@ static MemReadFunc mem_read_map[16] = {
 };
 
 u8 gb_mem_read(GameBoy *gb, u16 addr) {
-    (void)gb, (void)addr;
-    return 0;
+    return mem_read_map[addr >> 8](gb, addr);
 }
 
 void gb_mem_write(GameBoy *gb, u16 addr, u8 val) {
