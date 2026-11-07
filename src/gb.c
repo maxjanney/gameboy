@@ -692,7 +692,7 @@ static u8 gb_read_vram(GameBoy *gb, u16 addr) {
 }
 
 static u8 gb_read_eram(GameBoy *gb, u16 addr) {
-    (void) gb, (void)addr;
+    (void)gb, (void)addr;
     return 0xff;
 }
 
@@ -725,8 +725,44 @@ u8 gb_mem_read(GameBoy *gb, u16 addr) {
     return mem_read_map[addr >> 12](gb, addr);
 }
 
-void gb_mem_write(GameBoy *gb, u16 addr, u8 val) {
+static void gb_write_rom(GameBoy *gb, u16 addr, u8 val) {
     (void)gb, (void)addr, (void)val;
+}
+
+static void gb_write_vram(GameBoy *gb, u16 addr, u8 val) {
+    gb->vram[addr & 0x1fff] = val;
+}
+
+static void gb_write_eram(GameBoy *gb, u16 addr, u8 val) {
+    (void)gb, (void)addr, (void)val;
+}
+
+static void gb_write_wram(GameBoy *gb, u16 addr, u8 val) {
+    gb->wram[addr & 0x1fff] = val;
+}
+
+static void gb_write_high(GameBoy *gb, u16 addr, u8 val) {
+    (void)gb, (void)addr, (void)val;
+}
+
+typedef void (*MemWriteFunc)(GameBoy *gb, u16, u8);
+static MemWriteFunc mem_write_map[16] = {
+    // 0x0000 - 0x7fff. Assuming no mbc for now
+    gb_write_rom, gb_write_rom, gb_write_rom, gb_write_rom, gb_write_rom, gb_write_rom, gb_write_rom, gb_write_rom,
+    // 0x8000 - 0x9fff
+    gb_write_vram, gb_write_vram,
+    // 0xa000 - 0xbfff. Skipping for now
+    gb_write_eram, gb_write_eram,
+    // 0xc000 - 0xdfff
+    gb_write_wram, gb_write_wram,
+    // 0xe000 - 0xefff
+    gb_write_wram,
+    // 0xf000 - 0xffff
+    gb_write_high
+};
+
+void gb_mem_write(GameBoy *gb, u16 addr, u8 val) {
+    mem_write_map[addr >> 12](gb, addr, val);
 }
 
 #define GB_IO_SB   0x01
