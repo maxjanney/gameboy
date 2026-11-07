@@ -20,6 +20,7 @@ struct GameBoy {
     };
 
     u8 ime;
+    u8 interrupt_enable;
 
     u8 vram[0x2000];
     u8 oam[0xa0];

@@ -701,8 +701,11 @@ static u8 gb_read_wram(GameBoy *gb, u16 addr) {
 }
 
 static u8 gb_read_high(GameBoy *gb, u16 addr) {
-    (void)gb, (void)addr;
-    return 0;
+    if (addr < 0xffff) {
+        // just have to do hram for now
+        return gb->hram[addr & 0x7f];
+    }
+    return gb->interrupt_enable;
 }
 
 typedef u8 (*MemReadFunc)(GameBoy *, u16);
@@ -742,7 +745,13 @@ static void gb_write_wram(GameBoy *gb, u16 addr, u8 val) {
 }
 
 static void gb_write_high(GameBoy *gb, u16 addr, u8 val) {
-    (void)gb, (void)addr, (void)val;
+    if (addr < 0xff80) {
+        gb_io_write(gb, addr, val);
+    } else if (addr < 0xffff) {
+        gb->hram[addr & 0x7f] = val;
+    } else {
+        gb->interrupt_enable = val;
+    }
 }
 
 typedef void (*MemWriteFunc)(GameBoy *gb, u16, u8);
