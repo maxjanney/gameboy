@@ -691,6 +691,11 @@ static u8 gb_read_vram(GameBoy *gb, u16 addr) {
     return gb->vram[addr & 0x1fff];
 }
 
+static u8 gb_read_eram(GameBoy *gb, u16 addr) {
+    (void) gb, (void)addr;
+    return 0xff;
+}
+
 static u8 gb_read_wram(GameBoy *gb, u16 addr) {
     return gb->wram[addr & 0x1fff];
 }
@@ -707,7 +712,7 @@ static MemReadFunc mem_read_map[16] = {
     // 0x8000 - 0x9fff
     gb_read_vram, gb_read_vram,
     // 0xa000 - 0xbfff. Skipping for now
-    NULL, NULL,
+    gb_read_eram, gb_read_eram,
     // 0xc000 - 0xdfff
     gb_read_wram, gb_read_wram,
     // 0xe000 - 0xefff
@@ -717,7 +722,7 @@ static MemReadFunc mem_read_map[16] = {
 };
 
 u8 gb_mem_read(GameBoy *gb, u16 addr) {
-    return mem_read_map[addr >> 8](gb, addr);
+    return mem_read_map[addr >> 12](gb, addr);
 }
 
 void gb_mem_write(GameBoy *gb, u16 addr, u8 val) {
