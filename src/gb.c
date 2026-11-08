@@ -45,9 +45,9 @@ close_file:
 #define GB_FLAG_H (1 << 5)
 #define GB_FLAG_C (1 << 4)
 
-#define todo_opcode() {                                                 \
-    fprintf(stderr, "Unimplemented opcode encountered: 0x%02X\n", op);  \
-    abort();                                                            \
+#define todo_opcode() {                                                                     \
+    fprintf(stderr, "Unimplemented opcode encountered: 0x%02X on line %d\n", op, __LINE__); \
+    abort();                                                                                \
 }
 
 #define rr_r(r) {                                       \
