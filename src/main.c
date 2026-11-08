@@ -2,6 +2,7 @@
 #include "gb.h"
 
 #include "gb.c"
+#include "cpu.c"
 
 #define OUTPUT_SIZE 1024
 
