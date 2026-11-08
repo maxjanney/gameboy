@@ -22,8 +22,8 @@ Running gb-test-roms
   - [x] 06-ld r,r
   - [x] 05-op rp
   - [x] 04-op r,imm
-  - [ ] 03-op sp,hl
-  - [ ] 07-jr,jp,call,ret,rst
+  - [x] 03-op sp,hl
+  - [x] 07-jr,jp,call,ret,rst
   - [ ] 08-misc instrs
   - [ ] 09-op r,r
   - [ ] 11-op a,(hl)

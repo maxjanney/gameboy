@@ -305,6 +305,13 @@ static int gb_cb_prefix(GameBoy *gb) {
     return 3;                                       \
 }
 
+#define rst(vec) {                                  \
+    gb_mem_write(gb, --gb->sp, gb->pc >> 8);        \
+    gb_mem_write(gb, --gb->sp, gb->pc);             \
+    gb->pc = (vec);                                 \
+    return 4;                                       \
+}
+
 #define ret(cond) {                         \
     if (cond) {                             \
         u8 lo = gb_mem_read(gb, gb->sp++);  \
@@ -577,7 +584,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xc4: call(!(gb->f & GB_FLAG_Z));
     case 0xc5: push_rr(b, c);
     case 0xc6: add_a(gb_mem_read(gb, gb->pc++), 2);
-    case 0xc7: todo_opcode();
+    case 0xc7: rst(0x00);
 
     case 0xc8: ret(gb->f & GB_FLAG_Z);
     case 0xc9: {
@@ -591,7 +598,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xcc: call(gb->f & GB_FLAG_Z);
     case 0xcd: call(1);
     case 0xce: adc_a(gb_mem_read(gb, gb->pc++), 2);
-    case 0xcf: todo_opcode();
+    case 0xcf: rst(0x08);
 
     case 0xd0: ret(!(gb->f & GB_FLAG_C));
     case 0xd1: pop_rr(de);
@@ -600,10 +607,16 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xd4: call(!(gb->f & GB_FLAG_C));
     case 0xd5: push_rr(d, e);
     case 0xd6: sub_a(gb_mem_read(gb, gb->pc++), 2);
-    case 0xd7: todo_opcode();
+    case 0xd7: rst(0x10);
 
     case 0xd8: ret(gb->f & GB_FLAG_C);
-    case 0xd9: todo_opcode();
+    case 0xd9: {
+        u16 lo = (u16)gb_mem_read(gb, gb->sp++);
+        u16 hi = (u16)gb_mem_read(gb, gb->sp++);
+        gb->pc = (hi << 8) | lo;
+        gb->ime = 1;
+        return 4;
+    }
     case 0xda: jp_abs(gb->f & GB_FLAG_C);
     case 0xdb: todo_opcode();
     case 0xdc: call(gb->f & GB_FLAG_C);
@@ -617,7 +630,7 @@ int gb_cpu_step(GameBoy *gb) {
         gb->f = ((gb->a == 0) << 7) | GB_FLAG_N | (hf << 5) | (cf << 4);
         return 2;
     }
-    case 0xdf: todo_opcode();
+    case 0xdf: rst(0x18);
 
     case 0xe0: {
         u8 off = gb_mem_read(gb, gb->pc++);
@@ -630,9 +643,16 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xe4: todo_opcode();
     case 0xe5: push_rr(h, l);
     case 0xe6: and_a(gb_mem_read(gb, gb->pc++), 2);
-    case 0xe7: todo_opcode();
+    case 0xe7: rst(0x20);
 
-    case 0xe8: todo_opcode();
+    case 0xe8: {
+        u8 u = gb_mem_read(gb, gb->pc++);
+        u8 h = (gb->sp & 0xf) + (u & 0xf) > 0xf;
+        u8 c = (gb->sp & 0xff) + u > 0xff;
+        gb->sp = gb->sp + (i8)u;
+        gb->f = (h << 5) | (c << 4);
+        return 4;
+    }
     case 0xe9: gb->pc = gb->hl; return 1;
     case 0xea: {
         u8 lo = gb_mem_read(gb, gb->pc++);
@@ -644,7 +664,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xec: todo_opcode();
     case 0xed: todo_opcode();
     case 0xee: xor_a(gb_mem_read(gb, gb->pc++), 2);
-    case 0xef: todo_opcode();
+    case 0xef: rst(0x28);
 
     case 0xf0: {
         gb->a = gb_mem_read(gb, 0xff00 | (u16)gb_mem_read(gb, gb->pc++));
@@ -661,10 +681,20 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xf4: todo_opcode();
     case 0xf5: push_rr(a, f);
     case 0xf6: or_a(gb_mem_read(gb, gb->pc++), 2);
-    case 0xf7: todo_opcode();
+    case 0xf7: rst(0x30);
 
-    case 0xf8: todo_opcode();
-    case 0xf9: todo_opcode();
+    case 0xf8: {
+        u8 u = gb_mem_read(gb, gb->pc++);
+        u8 h = (gb->sp & 0xf) + (u & 0xf) > 0xf;
+        u8 c = (gb->sp & 0xff) + u > 0xff;
+        gb->hl = gb->sp + (i8)u;
+        gb->f = (h << 5) | (c << 4);
+        return 3;
+    }
+    case 0xf9: {
+        gb->sp = gb->hl;
+        return 2;
+    }
     case 0xfa: {
         u8 lo = gb_mem_read(gb, gb->pc++);
         u8 hi = gb_mem_read(gb, gb->pc++);
@@ -675,7 +705,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xfc: todo_opcode();
     case 0xfd: todo_opcode();
     case 0xfe: cp_a(gb_mem_read(gb, gb->pc++), 2);
-    case 0xff: todo_opcode();
+    case 0xff: rst(0x38);
     default: todo_opcode();
     }
 }
