@@ -21,7 +21,7 @@ Running gb-test-roms
 - cpu_instrs
   - [x] 06-ld r,r
   - [x] 05-op rp
-  - [ ] 04-op r,imm
+  - [x] 04-op r,imm
   - [ ] 03-op sp,hl
   - [ ] 07-jr,jp,call,ret,rst
   - [ ] 08-misc instrs
