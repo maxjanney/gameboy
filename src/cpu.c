@@ -502,8 +502,6 @@ static int gb_cb_prefix(GameBoy *gb) {
         return 4;
     }
     case 0xff: set_n(a, 7);
-
-    default: todo_opcode();
     }
     return 0;
 }
@@ -797,7 +795,28 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x24: inc_r(h);
     case 0x25: dec_r(h);
     case 0x26: ld_r_u8(h);
-    case 0x27: todo_opcode();
+    case 0x27: {
+        u8 offset = 0;
+        u8 carry = 0;
+        u8 add = !(gb->f & GB_FLAG_N);
+        if ((add && ((gb->a & 0xf) > 0x9)) || (gb->f & GB_FLAG_H)) {
+            offset |= 0x06;
+        }
+
+        if ((add && (gb->a > 0x99)) || (gb->f & GB_FLAG_C)) {
+            offset |= 0x60;
+            carry = 1;
+        }
+
+        if (add) {
+            gb->a += offset;
+        } else {
+            gb->a -= offset;
+        }
+
+        gb->f = ((gb->a == 0) << 7) | (gb->f & GB_FLAG_N) | (carry << 4);
+        return 1;
+    }
     case 0x28: jr_rel(gb->f & GB_FLAG_Z);
     case 0x29: add_hl_rr(hl);
     case 0x2a: ld_a_addr(gb->hl++);
