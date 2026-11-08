@@ -73,7 +73,7 @@ close_file:
 
 #define srl_r(r) {                          \
     u8 c = gb->r & 0x01;                    \
-    gb->r = (gb->r >> 1) & 0x7f;            \
+    gb->r = gb->r >> 1;                     \
     gb->f = ((gb->r == 0) << 7) | (c << 4); \
     return 2;                               \
 }
@@ -92,6 +92,20 @@ close_file:
     return 2;                                           \
 }
 
+#define sla_r(r) {                          \
+    u8 c = gb->r >> 7;                      \
+    gb->r <<= 1;                            \
+    gb->f = ((gb->r == 0) << 7) | (c << 4); \
+    return 2;                               \
+}
+
+#define sra_r(r) {\
+    u8 c = gb->r & 0x01;\
+    gb->r = (gb->r & 0x80) | (gb->r >> 1);\
+    gb->f = ((gb->r == 0) << 7) | (c << 4);\
+    return 2;\
+}
+
 static int gb_cb_prefix(GameBoy *gb) {
     u8 op = gb_mem_read(gb, gb->pc++);
     switch (op) {
@@ -101,7 +115,14 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x03: rlc_r(e);
     case 0x04: rlc_r(h);
     case 0x05: rlc_r(l);
-    case 0x06: todo_opcode();
+    case 0x06: {
+        u8 v = gb_mem_read(gb, gb->hl);
+        u8 c = v >> 7;
+        v = (v << 1) | c;
+        gb->f = ((v == 0) << 7) | (c << 4);
+        gb_mem_write(gb, gb->hl, v);
+        return 4;
+    }
     case 0x07: rlc_r(a);
 
     case 0x08: rrc_r(b);
@@ -110,7 +131,14 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x0b: rrc_r(e);
     case 0x0c: rrc_r(h);
     case 0x0d: rrc_r(l);
-    case 0x0e: todo_opcode();
+    case 0x0e: {
+        u8 v = gb_mem_read(gb, gb->hl);
+        u8 c = v & 0x01;
+        v = (c << 7) | (v >> 1);
+        gb->f = ((v == 0) << 7) | (c << 4);
+        gb_mem_write(gb, gb->hl, v);
+        return 4;
+    }
     case 0x0f: rrc_r(a);
 
     case 0x10: rl_r(b);
@@ -119,7 +147,14 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x13: rl_r(e);
     case 0x14: rl_r(h);
     case 0x15: rl_r(l);
-    case 0x16: todo_opcode();
+    case 0x16: {
+        u8 v = gb_mem_read(gb, gb->hl);
+        u8 c = v >> 7;
+        v = (v << 1) | ((gb->f & GB_FLAG_C) >> 4);
+        gb->f = ((v == 0) << 7) | (c << 4);
+        gb_mem_write(gb, gb->hl, v);
+        return 4;
+    }
     case 0x17: rl_r(a);
     
     case 0x18: rr_r(b);
@@ -128,8 +163,47 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x1b: rr_r(e);
     case 0x1c: rr_r(h);
     case 0x1d: rr_r(l);
-    case 0x1e: todo_opcode();
+    case 0x1e: {
+        u8 v = gb_mem_read(gb, gb->hl);
+        u8 c = v & 0x01;
+        v = ((gb->f & GB_FLAG_C) << 3) | (v >> 1);
+        gb->f = ((v == 0) << 7) | (c << 4);
+        gb_mem_write(gb, gb->hl, v);
+        return 4;
+    }
     case 0x1f: rr_r(a);
+
+    case 0x20: sla_r(b);
+    case 0x21: sla_r(c);
+    case 0x22: sla_r(d);
+    case 0x23: sla_r(e);
+    case 0x24: sla_r(h);
+    case 0x25: sla_r(l);
+    case 0x26: {
+        u8 v = gb_mem_read(gb, gb->hl);
+        u8 c = v >> 7;
+        v <<= 1;
+        gb->f = ((v == 0) << 7) | (c << 4);
+        gb_mem_write(gb, gb->hl, v);
+        return 4;
+    }
+    case 0x27: sla_r(a);
+
+    case 0x28: sra_r(b);
+    case 0x29: sra_r(c);
+    case 0x2a: sra_r(d);
+    case 0x2b: sra_r(e);
+    case 0x2c: sra_r(h);
+    case 0x2d: sra_r(l);
+    case 0x2e: {
+        u8 v = gb_mem_read(gb, gb->hl);
+        u8 c = v & 0x01;
+        v = (v & 0x80) | (v >> 1);
+        gb->f = ((v == 0) << 7) | (c << 4);
+        gb_mem_write(gb, gb->hl, v);
+        return 4;
+    }
+    case 0x2f: sra_r(a);
 
     case 0x30: swap_r(b);
     case 0x31: swap_r(c);
@@ -137,7 +211,13 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x33: swap_r(e);
     case 0x34: swap_r(h);
     case 0x35: swap_r(l);
-    case 0x36: todo_opcode();
+    case 0x36: {
+        u8 v = gb_mem_read(gb, gb->hl);
+        v = (v << 4) | (v >> 4);
+        gb->f = (v == 0) << 7;
+        gb_mem_write(gb, gb->hl, v);
+        return 4;
+    }
     case 0x37: swap_r(a);
 
     case 0x38: srl_r(b);
@@ -146,7 +226,14 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x3b: srl_r(e);
     case 0x3c: srl_r(h);
     case 0x3d: srl_r(l);
-    case 0x3e: todo_opcode();
+    case 0x3e: {
+        u8 v = gb_mem_read(gb, gb->hl);
+        u8 c = v & 0x01;
+        v >>= 1;
+        gb->f = ((v == 0) << 7) | (c << 4);
+        gb_mem_write(gb, gb->hl, v);
+        return 4;
+    }
     case 0x3f: srl_r(a);
 
     default: todo_opcode();
