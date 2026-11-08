@@ -216,7 +216,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x43: bit_n(e, 0);
     case 0x44: bit_n(h, 0);
     case 0x45: bit_n(l, 0);
-    case 0x46: todo_opcode();
+    case 0x46: {
+        gb->f = (!(gb_mem_read(gb, gb->hl) & 0x01) << 7) | GB_FLAG_H | (gb->f & GB_FLAG_C);
+        return 3;
+    }
     case 0x47: bit_n(a, 0);
 
     case 0x48: bit_n(b, 1);
@@ -225,7 +228,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x4b: bit_n(e, 1);
     case 0x4c: bit_n(h, 1);
     case 0x4d: bit_n(l, 1);
-    case 0x4e: todo_opcode();
+    case 0x4e: {
+        gb->f = (!(gb_mem_read(gb, gb->hl) & 0x02) << 7) | GB_FLAG_H | (gb->f & GB_FLAG_C);
+        return 3;
+    }
     case 0x4f: bit_n(a, 1);
 
     case 0x50: bit_n(b, 2);
@@ -234,7 +240,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x53: bit_n(e, 2);
     case 0x54: bit_n(h, 2);
     case 0x55: bit_n(l, 2);
-    case 0x56: todo_opcode();
+    case 0x56: {
+        gb->f = (!(gb_mem_read(gb, gb->hl) & 0x04) << 7) | GB_FLAG_H | (gb->f & GB_FLAG_C);
+        return 3;
+    }
     case 0x57: bit_n(a, 2);
 
     case 0x58: bit_n(b, 3);
@@ -243,7 +252,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x5b: bit_n(e, 3);
     case 0x5c: bit_n(h, 3);
     case 0x5d: bit_n(l, 3);
-    case 0x5e: todo_opcode();
+    case 0x5e: {
+        gb->f = (!(gb_mem_read(gb, gb->hl) & 0x08) << 7) | GB_FLAG_H | (gb->f & GB_FLAG_C);
+        return 3;
+    }
     case 0x5f: bit_n(a, 3);
 
     case 0x60: bit_n(b, 4);
@@ -252,7 +264,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x63: bit_n(e, 4);
     case 0x64: bit_n(h, 4);
     case 0x65: bit_n(l, 4);
-    case 0x66: todo_opcode();
+    case 0x66: {
+        gb->f = (!(gb_mem_read(gb, gb->hl) & 0x10) << 7) | GB_FLAG_H | (gb->f & GB_FLAG_C);
+        return 3;
+    }
     case 0x67: bit_n(a, 4);
 
     case 0x68: bit_n(b, 5);
@@ -261,7 +276,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x6b: bit_n(e, 5);
     case 0x6c: bit_n(h, 5);
     case 0x6d: bit_n(l, 5);
-    case 0x6e: todo_opcode();
+    case 0x6e: {
+        gb->f = (!(gb_mem_read(gb, gb->hl) & 0x20) << 7) | GB_FLAG_H | (gb->f & GB_FLAG_C);
+        return 3;
+    }
     case 0x6f: bit_n(a, 5);
 
     case 0x70: bit_n(b, 6);
@@ -270,7 +288,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x73: bit_n(e, 6);
     case 0x74: bit_n(h, 6);
     case 0x75: bit_n(l, 6);
-    case 0x76: todo_opcode();
+    case 0x76: {
+        gb->f = (!(gb_mem_read(gb, gb->hl) & 0x40) << 7) | GB_FLAG_H | (gb->f & GB_FLAG_C);
+        return 3;
+    }
     case 0x77: bit_n(a, 6);
 
     case 0x78: bit_n(b, 7);
@@ -279,7 +300,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x7b: bit_n(e, 7);
     case 0x7c: bit_n(h, 7);
     case 0x7d: bit_n(l, 7);
-    case 0x7e: todo_opcode();
+    case 0x7e: {
+        gb->f = (!(gb_mem_read(gb, gb->hl) & 0x80) << 7) | GB_FLAG_H | (gb->f & GB_FLAG_C);
+        return 3;
+    }
     case 0x7f: bit_n(a, 7);
 
     case 0x80: res_n(b, 0);
@@ -288,7 +312,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x83: res_n(e, 0);
     case 0x84: res_n(h, 0);
     case 0x85: res_n(l, 0);
-    case 0x86: todo_opcode();
+    case 0x86: {
+        gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->hl) & ~0x01);
+        return 4;
+    }
     case 0x87: res_n(a, 0);
 
     case 0x88: res_n(b, 1);
@@ -297,7 +324,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x8b: res_n(e, 1);
     case 0x8c: res_n(h, 1);
     case 0x8d: res_n(l, 1);
-    case 0x8e: todo_opcode();
+    case 0x8e: {
+        gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->hl) & ~0x02);
+        return 4;
+    }
     case 0x8f: res_n(a, 1);
 
     case 0x90: res_n(b, 2);
@@ -306,7 +336,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x93: res_n(e, 2);
     case 0x94: res_n(h, 2);
     case 0x95: res_n(l, 2);
-    case 0x96: todo_opcode();
+    case 0x96: {
+        gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->hl) & ~0x04);
+        return 4;
+    }
     case 0x97: res_n(a, 2);
 
     case 0x98: res_n(b, 3);
@@ -315,7 +348,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0x9b: res_n(e, 3);
     case 0x9c: res_n(h, 3);
     case 0x9d: res_n(l, 3);
-    case 0x9e: todo_opcode();
+    case 0x9e: {
+        gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->hl) & ~0x08);
+        return 4;
+    }
     case 0x9f: res_n(a, 3);
 
     case 0xa0: res_n(b, 4);
@@ -324,7 +360,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0xa3: res_n(e, 4);
     case 0xa4: res_n(h, 4);
     case 0xa5: res_n(l, 4);
-    case 0xa6: todo_opcode();
+    case 0xa6: {
+        gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->hl) & ~0x10);
+        return 4;
+    }
     case 0xa7: res_n(a, 4);
 
     case 0xa8: res_n(b, 5);
@@ -333,7 +372,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0xab: res_n(e, 5);
     case 0xac: res_n(h, 5);
     case 0xad: res_n(l, 5);
-    case 0xae: todo_opcode();
+    case 0xae: {
+        gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->hl) & ~0x20);
+        return 4;
+    }
     case 0xaf: res_n(a, 5);
 
     case 0xb0: res_n(b, 6);
@@ -342,7 +384,11 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0xb3: res_n(e, 6);
     case 0xb4: res_n(h, 6);
     case 0xb5: res_n(l, 6);
-    case 0xb6: todo_opcode();
+    case 0xb6: {
+        gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->hl) & ~0x40);
+        return 4;
+    }
+
     case 0xb7: res_n(a, 6);
 
     case 0xb8: res_n(b, 7);
@@ -351,7 +397,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0xbb: res_n(e, 7);
     case 0xbc: res_n(h, 7);
     case 0xbd: res_n(l, 7);
-    case 0xbe: todo_opcode();
+    case 0xbe: {
+        gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->hl) & ~0x80);
+        return 4;
+    }
     case 0xbf: res_n(a, 7);
 
     case 0xc0: set_n(b, 0);
@@ -360,7 +409,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0xc3: set_n(e, 0);
     case 0xc4: set_n(h, 0);
     case 0xc5: set_n(l, 0);
-    case 0xc6: todo_opcode();
+    case 0xc6: {
+        gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->hl) | 0x01);
+        return 4;
+    }
     case 0xc7: set_n(a, 0);
 
     case 0xc8: set_n(b, 1);
@@ -369,7 +421,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0xcb: set_n(e, 1);
     case 0xcc: set_n(h, 1);
     case 0xcd: set_n(l, 1);
-    case 0xce: todo_opcode();
+    case 0xce: {
+        gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->hl) | 0x02);
+        return 4;
+    }
     case 0xcf: set_n(a, 1);
 
     case 0xd0: set_n(b, 2);
@@ -378,7 +433,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0xd3: set_n(e, 2);
     case 0xd4: set_n(h, 2);
     case 0xd5: set_n(l, 2);
-    case 0xd6: todo_opcode();
+    case 0xd6: {
+        gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->hl) | 0x04);
+        return 4;
+    }
     case 0xd7: set_n(a, 2);
 
     case 0xd8: set_n(b, 3);
@@ -387,7 +445,11 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0xdb: set_n(e, 3);
     case 0xdc: set_n(h, 3);
     case 0xdd: set_n(l, 3);
-    case 0xde: todo_opcode();
+    case 0xde: {
+        gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->hl) | 0x08);
+        return 4;
+    }
+
     case 0xdf: set_n(a, 3);
 
     case 0xe0: set_n(b, 4);
@@ -396,7 +458,11 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0xe3: set_n(e, 4);
     case 0xe4: set_n(h, 4);
     case 0xe5: set_n(l, 4);
-    case 0xe6: todo_opcode();
+    case 0xe6: {
+        gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->hl) | 0x10);
+        return 4;
+    }
+
     case 0xe7: set_n(a, 4);
 
     case 0xe8: set_n(b, 5);
@@ -405,7 +471,11 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0xeb: set_n(e, 5);
     case 0xec: set_n(h, 5);
     case 0xed: set_n(l, 5);
-    case 0xee: todo_opcode();
+    case 0xee: {
+        gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->hl) | 0x20);
+        return 4;
+    }
+
     case 0xef: set_n(a, 5);
 
     case 0xf0: set_n(b, 6);
@@ -414,7 +484,11 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0xf3: set_n(e, 6);
     case 0xf4: set_n(h, 6);
     case 0xf5: set_n(l, 6);
-    case 0xf6: todo_opcode();
+    case 0xf6: {
+        gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->hl) | 0x40);
+        return 4;
+    }
+
     case 0xf7: set_n(a, 6);
 
     case 0xf8: set_n(b, 7);
@@ -423,7 +497,10 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0xfb: set_n(e, 7);
     case 0xfc: set_n(h, 7);
     case 0xfd: set_n(l, 7);
-    case 0xfe: todo_opcode();
+    case 0xfe: {
+        gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->hl) | 0x80);
+        return 4;
+    }
     case 0xff: set_n(a, 7);
 
     default: todo_opcode();
