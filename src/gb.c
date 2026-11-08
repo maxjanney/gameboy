@@ -50,6 +50,13 @@ close_file:
     abort();                                                                                \
 }
 
+#define rlc_r(r) {                          \
+    u8 c = gb->r >> 7;                      \
+    gb->r = (gb->r << 1) | c;               \
+    gb->f = ((gb->r == 0) << 7) | (c << 4); \
+    return 2;                               \
+}
+
 #define rr_r(r) {                                       \
     u8 b = gb->r & 0x01;                                \
     gb->r = ((gb->f & GB_FLAG_C) << 3) | (gb->r >> 1);  \
@@ -71,9 +78,50 @@ close_file:
     return 2;                               \
 }
 
+#define rrc_r(r) {                          \
+    u8 c = (gb->r & 0x01);                  \
+    gb->r = (c << 7) | (gb->r >> 1);        \
+    gb->f = ((gb->r == 0) << 7) | (c << 4); \
+    return 2;                               \
+}
+
+#define rl_r(r) {                                       \
+    u8 c = gb->r >> 7;                                  \
+    gb->r = (gb->r << 1) | ((gb->f & GB_FLAG_C) >> 4);  \
+    gb->f = ((gb->r == 0) << 7) | (c << 4);             \
+    return 2;                                           \
+}
+
 static int gb_cb_prefix(GameBoy *gb) {
     u8 op = gb_mem_read(gb, gb->pc++);
     switch (op) {
+    case 0x00: rlc_r(b);
+    case 0x01: rlc_r(c);
+    case 0x02: rlc_r(d);
+    case 0x03: rlc_r(e);
+    case 0x04: rlc_r(h);
+    case 0x05: rlc_r(l);
+    case 0x06: todo_opcode();
+    case 0x07: rlc_r(a);
+
+    case 0x08: rrc_r(b);
+    case 0x09: rrc_r(c);
+    case 0x0a: rrc_r(d);
+    case 0x0b: rrc_r(e);
+    case 0x0c: rrc_r(h);
+    case 0x0d: rrc_r(l);
+    case 0x0e: todo_opcode();
+    case 0x0f: rrc_r(a);
+
+    case 0x10: rl_r(b);
+    case 0x11: rl_r(c);
+    case 0x12: rl_r(d);
+    case 0x13: rl_r(e);
+    case 0x14: rl_r(h);
+    case 0x15: rl_r(l);
+    case 0x16: todo_opcode();
+    case 0x17: rl_r(a);
+    
     case 0x18: rr_r(b);
     case 0x19: rr_r(c);
     case 0x1a: rr_r(d);
@@ -133,7 +181,6 @@ static int gb_cb_prefix(GameBoy *gb) {
     return 2;                           \
 }
 
-// addr must be used exactly once so hl++/hl-- only step once
 #define ld_addr_a(addr) {               \
     gb_mem_write(gb, (addr), gb->a);    \
     return 2;                           \
@@ -174,7 +221,6 @@ static int gb_cb_prefix(GameBoy *gb) {
     return 2;           \
 }
 
-// val_expr must be evaluated exactly once (it may be a mem read / pc++)
 #define add_a(val_expr, cycles) {               \
     u8 val = (val_expr);                        \
     u16 res = gb->a + val;                      \
@@ -199,7 +245,6 @@ static int gb_cb_prefix(GameBoy *gb) {
     return 2;                                           \
 }
 
-// val_expr must be evaluated exactly once (it may be a mem read / pc++)
 #define adc_a(val_expr, cycles) {                       \
     u8 val = (val_expr);                                \
     u8 c = (gb->f & GB_FLAG_C) >> 4;                    \
@@ -213,7 +258,6 @@ static int gb_cb_prefix(GameBoy *gb) {
     return (cycles);                                    \
 }
 
-// val_expr must be evaluated exactly once (it may be a mem read / pc++)
 #define sub_a(val_expr, cycles) {                       \
     u8 val = (val_expr);                                \
     u8 c = val > gb->a;                                 \
@@ -226,28 +270,34 @@ static int gb_cb_prefix(GameBoy *gb) {
     return (cycles);                                    \
 }
 
-// val_expr must be evaluated exactly once (it may be a mem read / pc++)
+#define sbc_a(val_expr, cycles) {                                       \
+    u8 val = (val_expr);                                                \
+    u8 c = (gb->f & GB_FLAG_C) >> 4;                                    \
+    int cf = gb->a < val + c;                                           \
+    int hf = (gb->a & 0xf) < (val & 0xf) + c;                           \
+    gb->a = gb->a - val - c;                                            \
+    gb->f = ((gb->a == 0) << 7) | GB_FLAG_N | (hf << 5) | (cf << 4);    \
+    return (cycles);                                                    \
+}
+
 #define and_a(val_expr, cycles) {               \
     gb->a &= (val_expr);                        \
     gb->f = ((gb->a == 0) << 7) | GB_FLAG_H;    \
     return (cycles);                            \
 }
 
-// val_expr must be evaluated exactly once (it may be a mem read / pc++)
 #define xor_a(val_expr, cycles) {   \
     gb->a ^= (val_expr);            \
     gb->f = (gb->a == 0) << 7;      \
     return (cycles);                \
 }
 
-// val_expr must be evaluated exactly once (it may be a mem read / pc++)
 #define or_a(val_expr, cycles) {    \
     gb->a |= (val_expr);            \
     gb->f = (gb->a == 0) << 7;      \
     return (cycles);                \
 }
 
-// val_expr must be evaluated exactly once (it may be a mem read / pc++)
 #define cp_a(val_expr, cycles) {                        \
     u8 val = (val_expr);                                \
     u8 c = val > gb->a;                                 \
@@ -430,7 +480,10 @@ int gb_cpu_step(GameBoy *gb) {
         return 3;
     }
     case 0x36: gb_mem_write(gb, gb->hl, gb_mem_read(gb, gb->pc++)); return 3;
-    case 0x37: todo_opcode();
+    case 0x37: {
+        gb->f = (gb->f & GB_FLAG_Z) | GB_FLAG_C;
+        return 1;
+    }
     case 0x38: jr_rel(gb->f & GB_FLAG_C);
     case 0x39: add_hl_rr(sp);
     case 0x3a: ld_a_addr(gb->hl--);
@@ -438,7 +491,10 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x3c: inc_r(a);
     case 0x3d: dec_r(a);
     case 0x3e: ld_r_u8(a);
-    case 0x3f: todo_opcode();
+    case 0x3f: {
+        gb->f = (gb->f & GB_FLAG_Z) | (~gb->f & GB_FLAG_C);
+        return 1;
+    }
 
     case 0x40: ld_r_r(b, b);
     case 0x41: ld_r_r(b, c);
@@ -532,14 +588,14 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x96: sub_a(gb_mem_read(gb, gb->hl), 2);
     case 0x97: sub_a(gb->a, 1);
 
-    case 0x98: todo_opcode();
-    case 0x99: todo_opcode();
-    case 0x9a: todo_opcode();
-    case 0x9b: todo_opcode();
-    case 0x9c: todo_opcode();
-    case 0x9d: todo_opcode();
-    case 0x9e: todo_opcode();
-    case 0x9f: todo_opcode();
+    case 0x98: sbc_a(gb->b, 1);
+    case 0x99: sbc_a(gb->c, 1);
+    case 0x9a: sbc_a(gb->d, 1);
+    case 0x9b: sbc_a(gb->e, 1);
+    case 0x9c: sbc_a(gb->h, 1);
+    case 0x9d: sbc_a(gb->l, 1);
+    case 0x9e: sbc_a(gb_mem_read(gb, gb->hl), 2);
+    case 0x9f: sbc_a(gb->a, 1);
 
     case 0xa0: and_a(gb->b, 1);
     case 0xa1: and_a(gb->c, 1);
