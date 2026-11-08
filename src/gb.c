@@ -116,9 +116,9 @@ close_file:
     return 2;           \
 }
 
-#define set_n(r, n) {\
-    gb->r |= 1 << n;\
-    return 2;\
+#define set_n(r, n) {   \
+    gb->r |= 1 << n;    \
+    return 2;           \
 }
 
 static int gb_cb_prefix(GameBoy *gb) {
