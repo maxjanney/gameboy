@@ -116,6 +116,11 @@ close_file:
     return 2;           \
 }
 
+#define set_n(r, n) {\
+    gb->r |= 1 << n;\
+    return 2;\
+}
+
 static int gb_cb_prefix(GameBoy *gb) {
     u8 op = gb_mem_read(gb, gb->pc++);
     switch (op) {
@@ -389,6 +394,78 @@ static int gb_cb_prefix(GameBoy *gb) {
     case 0xbd: res_n(l, 7);
     case 0xbe: todo_opcode();
     case 0xbf: res_n(a, 7);
+
+    case 0xc0: set_n(b, 0);
+    case 0xc1: set_n(c, 0);
+    case 0xc2: set_n(d, 0);
+    case 0xc3: set_n(e, 0);
+    case 0xc4: set_n(h, 0);
+    case 0xc5: set_n(l, 0);
+    case 0xc6: todo_opcode();
+    case 0xc7: set_n(a, 0);
+
+    case 0xc8: set_n(b, 1);
+    case 0xc9: set_n(c, 1);
+    case 0xca: set_n(d, 1);
+    case 0xcb: set_n(e, 1);
+    case 0xcc: set_n(h, 1);
+    case 0xcd: set_n(l, 1);
+    case 0xce: todo_opcode();
+    case 0xcf: set_n(a, 1);
+
+    case 0xd0: set_n(b, 2);
+    case 0xd1: set_n(c, 2);
+    case 0xd2: set_n(d, 2);
+    case 0xd3: set_n(e, 2);
+    case 0xd4: set_n(h, 2);
+    case 0xd5: set_n(l, 2);
+    case 0xd6: todo_opcode();
+    case 0xd7: set_n(a, 2);
+
+    case 0xd8: set_n(b, 3);
+    case 0xd9: set_n(c, 3);
+    case 0xda: set_n(d, 3);
+    case 0xdb: set_n(e, 3);
+    case 0xdc: set_n(h, 3);
+    case 0xdd: set_n(l, 3);
+    case 0xde: todo_opcode();
+    case 0xdf: set_n(a, 3);
+
+    case 0xe0: set_n(b, 4);
+    case 0xe1: set_n(c, 4);
+    case 0xe2: set_n(d, 4);
+    case 0xe3: set_n(e, 4);
+    case 0xe4: set_n(h, 4);
+    case 0xe5: set_n(l, 4);
+    case 0xe6: todo_opcode();
+    case 0xe7: set_n(a, 4);
+
+    case 0xe8: set_n(b, 5);
+    case 0xe9: set_n(c, 5);
+    case 0xea: set_n(d, 5);
+    case 0xeb: set_n(e, 5);
+    case 0xec: set_n(h, 5);
+    case 0xed: set_n(l, 5);
+    case 0xee: todo_opcode();
+    case 0xef: set_n(a, 5);
+
+    case 0xf0: set_n(b, 6);
+    case 0xf1: set_n(c, 6);
+    case 0xf2: set_n(d, 6);
+    case 0xf3: set_n(e, 6);
+    case 0xf4: set_n(h, 6);
+    case 0xf5: set_n(l, 6);
+    case 0xf6: todo_opcode();
+    case 0xf7: set_n(a, 6);
+
+    case 0xf8: set_n(b, 7);
+    case 0xf9: set_n(c, 7);
+    case 0xfa: set_n(d, 7);
+    case 0xfb: set_n(e, 7);
+    case 0xfc: set_n(h, 7);
+    case 0xfd: set_n(l, 7);
+    case 0xfe: todo_opcode();
+    case 0xff: set_n(a, 7);
 
 
     default: todo_opcode();

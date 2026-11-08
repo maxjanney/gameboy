@@ -35,6 +35,6 @@ int main(int argc, char **argv) {
 		gb_cpu_step(&gb);
 	}
 
-	printf("Test completed\n%s", serial_buf);
+	printf("%s", serial_buf);
 	gb_free(&gb);
 }

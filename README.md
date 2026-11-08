@@ -27,7 +27,7 @@ Running gb-test-roms
   - [x] 08-misc instrs
   - [x] 09-op r,r
   - [ ] 11-op a,(hl)
-  - [ ] 10-bit ops
+  - [x] 10-bit ops
   - [ ] 01-special
   - [ ] 02-interrupts
 - instr_timing
