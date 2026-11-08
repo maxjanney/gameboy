@@ -106,6 +106,16 @@ close_file:
     return 2;\
 }
 
+#define bit_n(r, n) {                                                       \
+    gb->f = (!(gb->r & (1 << (n))) << 7) | GB_FLAG_H | (gb->f & GB_FLAG_C); \
+    return 2;                                                               \
+}
+
+#define res_n(r, n) {   \
+    gb->r &= ~(1 << n); \
+    return 2;           \
+}
+
 static int gb_cb_prefix(GameBoy *gb) {
     u8 op = gb_mem_read(gb, gb->pc++);
     switch (op) {
@@ -235,6 +245,151 @@ static int gb_cb_prefix(GameBoy *gb) {
         return 4;
     }
     case 0x3f: srl_r(a);
+
+    case 0x40: bit_n(b, 0);
+    case 0x41: bit_n(c, 0);
+    case 0x42: bit_n(d, 0);
+    case 0x43: bit_n(e, 0);
+    case 0x44: bit_n(h, 0);
+    case 0x45: bit_n(l, 0);
+    case 0x46: todo_opcode();
+    case 0x47: bit_n(a, 0);
+
+    case 0x48: bit_n(b, 1);
+    case 0x49: bit_n(c, 1);
+    case 0x4a: bit_n(d, 1);
+    case 0x4b: bit_n(e, 1);
+    case 0x4c: bit_n(h, 1);
+    case 0x4d: bit_n(l, 1);
+    case 0x4e: todo_opcode();
+    case 0x4f: bit_n(a, 1);
+
+    case 0x50: bit_n(b, 2);
+    case 0x51: bit_n(c, 2);
+    case 0x52: bit_n(d, 2);
+    case 0x53: bit_n(e, 2);
+    case 0x54: bit_n(h, 2);
+    case 0x55: bit_n(l, 2);
+    case 0x56: todo_opcode();
+    case 0x57: bit_n(a, 2);
+
+    case 0x58: bit_n(b, 3);
+    case 0x59: bit_n(c, 3);
+    case 0x5a: bit_n(d, 3);
+    case 0x5b: bit_n(e, 3);
+    case 0x5c: bit_n(h, 3);
+    case 0x5d: bit_n(l, 3);
+    case 0x5e: todo_opcode();
+    case 0x5f: bit_n(a, 3);
+
+    case 0x60: bit_n(b, 4);
+    case 0x61: bit_n(c, 4);
+    case 0x62: bit_n(d, 4);
+    case 0x63: bit_n(e, 4);
+    case 0x64: bit_n(h, 4);
+    case 0x65: bit_n(l, 4);
+    case 0x66: todo_opcode();
+    case 0x67: bit_n(a, 4);
+
+    case 0x68: bit_n(b, 5);
+    case 0x69: bit_n(c, 5);
+    case 0x6a: bit_n(d, 5);
+    case 0x6b: bit_n(e, 5);
+    case 0x6c: bit_n(h, 5);
+    case 0x6d: bit_n(l, 5);
+    case 0x6e: todo_opcode();
+    case 0x6f: bit_n(a, 5);
+
+    case 0x70: bit_n(b, 6);
+    case 0x71: bit_n(c, 6);
+    case 0x72: bit_n(d, 6);
+    case 0x73: bit_n(e, 6);
+    case 0x74: bit_n(h, 6);
+    case 0x75: bit_n(l, 6);
+    case 0x76: todo_opcode();
+    case 0x77: bit_n(a, 6);
+
+    case 0x78: bit_n(b, 7);
+    case 0x79: bit_n(c, 7);
+    case 0x7a: bit_n(d, 7);
+    case 0x7b: bit_n(e, 7);
+    case 0x7c: bit_n(h, 7);
+    case 0x7d: bit_n(l, 7);
+    case 0x7e: todo_opcode();
+    case 0x7f: bit_n(a, 7);
+
+    case 0x80: res_n(b, 0);
+    case 0x81: res_n(c, 0);
+    case 0x82: res_n(d, 0);
+    case 0x83: res_n(e, 0);
+    case 0x84: res_n(h, 0);
+    case 0x85: res_n(l, 0);
+    case 0x86: todo_opcode();
+    case 0x87: res_n(a, 0);
+
+    case 0x88: res_n(b, 1);
+    case 0x89: res_n(c, 1);
+    case 0x8a: res_n(d, 1);
+    case 0x8b: res_n(e, 1);
+    case 0x8c: res_n(h, 1);
+    case 0x8d: res_n(l, 1);
+    case 0x8e: todo_opcode();
+    case 0x8f: res_n(a, 1);
+
+    case 0x90: res_n(b, 2);
+    case 0x91: res_n(c, 2);
+    case 0x92: res_n(d, 2);
+    case 0x93: res_n(e, 2);
+    case 0x94: res_n(h, 2);
+    case 0x95: res_n(l, 2);
+    case 0x96: todo_opcode();
+    case 0x97: res_n(a, 2);
+
+    case 0x98: res_n(b, 3);
+    case 0x99: res_n(c, 3);
+    case 0x9a: res_n(d, 3);
+    case 0x9b: res_n(e, 3);
+    case 0x9c: res_n(h, 3);
+    case 0x9d: res_n(l, 3);
+    case 0x9e: todo_opcode();
+    case 0x9f: res_n(a, 3);
+
+    case 0xa0: res_n(b, 4);
+    case 0xa1: res_n(c, 4);
+    case 0xa2: res_n(d, 4);
+    case 0xa3: res_n(e, 4);
+    case 0xa4: res_n(h, 4);
+    case 0xa5: res_n(l, 4);
+    case 0xa6: todo_opcode();
+    case 0xa7: res_n(a, 4);
+
+    case 0xa8: res_n(b, 5);
+    case 0xa9: res_n(c, 5);
+    case 0xaa: res_n(d, 5);
+    case 0xab: res_n(e, 5);
+    case 0xac: res_n(h, 5);
+    case 0xad: res_n(l, 5);
+    case 0xae: todo_opcode();
+    case 0xaf: res_n(a, 5);
+
+    case 0xb0: res_n(b, 6);
+    case 0xb1: res_n(c, 6);
+    case 0xb2: res_n(d, 6);
+    case 0xb3: res_n(e, 6);
+    case 0xb4: res_n(h, 6);
+    case 0xb5: res_n(l, 6);
+    case 0xb6: todo_opcode();
+    case 0xb7: res_n(a, 6);
+
+    case 0xb8: res_n(b, 7);
+    case 0xb9: res_n(c, 7);
+    case 0xba: res_n(d, 7);
+    case 0xbb: res_n(e, 7);
+    case 0xbc: res_n(h, 7);
+    case 0xbd: res_n(l, 7);
+    case 0xbe: todo_opcode();
+    case 0xbf: res_n(a, 7);
+
 
     default: todo_opcode();
     }
