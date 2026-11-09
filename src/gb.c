@@ -64,11 +64,13 @@ static u8 gb_read_wram(GameBoy *gb, u16 addr) {
 }
 
 static u8 gb_read_high(GameBoy *gb, u16 addr) {
-    if (addr < 0xffff) {
-        // just have to do hram for now
+    if (addr < 0xff80) {
+        return gb->io_regs[addr & 0x7f];
+    } else if (addr < 0xffff) {
         return gb->hram[addr & 0x7f];
+    } else {
+        return gb->interrupt_enable;
     }
-    return gb->interrupt_enable;
 }
 
 typedef u8 (*MemReadFunc)(GameBoy *, u16);
