@@ -20,6 +20,7 @@ struct GameBoy {
     };
 
     u8 ime;
+    u8 ime_delay;
     u8 interrupt_enable;
 
     u8 vram[0x2000];
@@ -29,7 +30,7 @@ struct GameBoy {
 
     u8 *rom;
     size_t rom_len;
-    
+
     u8 io_regs[0x80];
     SerialCallback serial_io;
 };

@@ -130,7 +130,7 @@ static int gb_cb_prefix(GameBoy *gb) {
         return 4;
     }
     case 0x17: rl_r(a);
-    
+
     case 0x18: rr_r(b);
     case 0x19: rr_r(c);
     case 0x1a: rr_r(d);
@@ -722,16 +722,16 @@ static int gb_cb_prefix(GameBoy *gb) {
         return 5;                           \
     }                                       \
     return 2;                               \
-} 
+}
 
 int gb_cpu_step(GameBoy *gb) {
     // interrupts, what i remember
-    // 
+    //
     // IME - master interrupt flag
     // ei - enables interrupts (delayed by an instruction)
     // di - disables interrupts immedietly
     //
-    // 0xFFFF - interrupt enable 
+    // 0xFFFF - interrupt enable
     //                   0        1       2      3      4
     // lower 4 bits | Joypad | Serial | Timer | LCD | VBlank
     // which interrupts we have enabled
@@ -740,11 +740,11 @@ int gb_cpu_step(GameBoy *gb) {
     //                   0        1       2      3      4
     // lower 4 bits | Joypad | Serial | Timer | LCD | VBlank
     // usually set by hardware though user code can manipulate this
-    // 
+    //
     // if IME & (IE & IF):// pending interrupt
     //   service_interrupt()
     // ...
-    // 
+    //
     // halt instructoin
     // if pending_interrupt:
     //   if ime: cancel
@@ -754,6 +754,13 @@ int gb_cpu_step(GameBoy *gb) {
     //
     // coming out of halt
     // if IE & IF: halt = false
+    u8 ime_delay = gb->ime_delay;
+    gb->ime_delay = 0;
+
+    // interrupt handling...
+
+    if (ime_delay) gb->ime = 1;
+
     u8 op = gb_mem_read(gb, gb->pc++);
     switch (op) {
     case 0x00: return 1;
@@ -1135,7 +1142,7 @@ int gb_cpu_step(GameBoy *gb) {
         return 3;
     }
     case 0xf2: ld_a_addr(0xff00 | gb->c);
-    case 0xf3: gb->ime = 0; return 1;
+    case 0xf3: gb->ime = gb->ime_delay = 0; return 1;
     case 0xf4: todo_opcode();
     case 0xf5: push_rr(a, f);
     case 0xf6: or_a(gb_mem_read(gb, gb->pc++), 2);
@@ -1159,7 +1166,7 @@ int gb_cpu_step(GameBoy *gb) {
         gb->a = gb_mem_read(gb, ((u16)hi << 8) | lo);
         return 4;
     }
-    case 0xfb: todo_opcode();
+    case 0xfb: gb->ime_delay = 1; return 1;
     case 0xfc: todo_opcode();
     case 0xfd: todo_opcode();
     case 0xfe: cp_a(gb_mem_read(gb, gb->pc++), 2);
