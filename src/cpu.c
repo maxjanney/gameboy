@@ -725,6 +725,35 @@ static int gb_cb_prefix(GameBoy *gb) {
 } 
 
 int gb_cpu_step(GameBoy *gb) {
+    // interrupts, what i remember
+    // 
+    // IME - master interrupt flag
+    // ei - enables interrupts (delayed by an instruction)
+    // di - disables interrupts immedietly
+    //
+    // 0xFFFF - interrupt enable 
+    //                   0        1       2      3      4
+    // lower 4 bits | Joypad | Serial | Timer | LCD | VBlank
+    // which interrupts we have enabled
+    //
+    // 0xFF0F - interrupt flag
+    //                   0        1       2      3      4
+    // lower 4 bits | Joypad | Serial | Timer | LCD | VBlank
+    // usually set by hardware though user code can manipulate this
+    // 
+    // if IME & (IE & IF):// pending interrupt
+    //   service_interrupt()
+    // ...
+    // 
+    // halt instructoin
+    // if pending_interrupt:
+    //   if ime: cancel
+    //   else: halt_bug?
+    // else: # no pending interrupt
+    //   halt = true
+    //
+    // coming out of halt
+    // if IE & IF: halt = false
     u8 op = gb_mem_read(gb, gb->pc++);
     switch (op) {
     case 0x00: return 1;

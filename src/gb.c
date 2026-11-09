@@ -139,17 +139,19 @@ void gb_mem_write(GameBoy *gb, u16 addr, u8 val) {
 
 #define GB_IO_SB   0x01
 #define GB_IO_SC   0x02
+#define GB_IO_IF   0xF0
 
 void gb_io_write(GameBoy *gb, u16 addr, u8 val) {
-    u8 io_reg = addr & 0x7f;
-    switch (io_reg) {
-    case GB_IO_SB: gb->io_regs[io_reg] = val; break;
+    switch (addr & 0x7f) {
+    case GB_IO_SB: gb->io_regs[GB_IO_SB] = val; break;
     case GB_IO_SC:
         val |= 2;
-        gb->io_regs[io_reg] = val | (~0x83);
+        gb->io_regs[GB_IO_SC] = val | (~0x83);
         if (((val & 0x80) && (val & 0x01)) && gb->serial_io) {
             gb->serial_io(gb->io_regs[GB_IO_SB]);
         }
         break;
+    case GB_IO_IF:
+        gb->io_regs[GB_IO_IF] = val | 0xe0;
     }
 }
