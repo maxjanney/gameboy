@@ -758,8 +758,11 @@ int gb_cpu_step(GameBoy *gb) {
     gb->ime_delay = 0;
 
     // interrupt handling...
+    // todo: check for servicable interrupts, if so, exit halted state
 
     if (ime_delay) gb->ime = 1;
+
+    if (gb->halted) return 1;
 
     u8 op = gb_mem_read(gb, gb->pc++);
     switch (op) {
@@ -959,7 +962,17 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x73: ld_hl_r(e);
     case 0x74: ld_hl_r(h);
     case 0x75: ld_hl_r(l);
-    case 0x76: todo_opcode(); // halt
+    case 0x76: {
+        // before executing a halt, we should check for serviciable interrupts
+        // if there are any and IME=0 (halt bug) and if IME=1, exit and the next loop iter handles the interrupt
+        // if there are no servicable interrupts, then we enter a halted state
+        if ((gb->interrupt_enable & gb->io_regs[GB_IO_IF] & 0x1f) != 0) {
+            gb->halted = 0;
+        } else {
+            gb->halted = 1;
+        }
+        return 1;
+    }
     case 0x77: ld_hl_r(a);
     case 0x78: ld_r_r(a, b);
     case 0x79: ld_r_r(a, c);
