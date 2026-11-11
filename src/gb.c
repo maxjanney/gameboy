@@ -23,10 +23,11 @@ int gb_load_rom(GameBoy *gb, const char *path) {
     fseek(f, 0, SEEK_SET);
     if (n < 0x8000) n = 0x8000;
 
-    if (gb->rom) free(gb->rom);
+    free(gb->rom);
     gb->rom = malloc(n);
     if (!gb->rom) goto close_file;
     gb->rom_len = n;
+
     size_t nread = fread(gb->rom, 1, n, f);
     if (!nread && ferror(f)) goto free_rom;
 

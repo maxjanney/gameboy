@@ -757,9 +757,11 @@ int gb_cpu_step(GameBoy *gb) {
     u8 ime_delay = gb->ime_delay;
     gb->ime_delay = 0;
 
-    // interrupt handling...
-    // todo: check for servicable interrupts, if so, exit halted state
+    u8 pending_interrupts = (gb->interrupt_enable & gb->io_regs[GB_IO_ID]) != 0;
+    if (pending_interrupts) gb->halted = 0;
 
+    // todo: interrupt handling...
+    
     if (ime_delay) gb->ime = 1;
 
     if (gb->halted) return 1;
