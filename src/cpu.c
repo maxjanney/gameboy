@@ -757,7 +757,7 @@ int gb_cpu_step(GameBoy *gb) {
     u8 ime_delay = gb->ime_delay;
     gb->ime_delay = 0;
 
-    u8 pending_interrupts = (gb->interrupt_enable & gb->io_regs[GB_IO_ID]) != 0;
+    u8 pending_interrupts = (gb->interrupt_enable & gb->io_regs[GB_IO_IF]) != 0;
     if (pending_interrupts) gb->halted = 0;
 
     // todo: interrupt handling...
