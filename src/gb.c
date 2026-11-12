@@ -154,6 +154,6 @@ void gb_io_write(GameBoy *gb, u16 addr, u8 val) {
         }
         break;
     case GB_IO_DIV: gb->io_regs[GB_IO_DIV] = 0x00; break;
-    case GB_IO_IF: gb->io_regs[GB_IO_IF] = val | 0xe0 break;
+    case GB_IO_IF: gb->io_regs[GB_IO_IF] = val | 0xe0; break;
     }
 }
