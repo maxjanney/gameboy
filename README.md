@@ -16,6 +16,8 @@ Goals for this project
 
 ## TODO
 
+Have claude review code for reading/writing to timer io registers, handling of halt, and interrupt servicing.
+
 Running gb-test-roms
 
 - cpu_instrs

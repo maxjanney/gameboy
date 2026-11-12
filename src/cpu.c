@@ -729,47 +729,37 @@ static int gb_cb_prefix(GameBoy *gb) {
     return 2;                               \
 }
 
-int gb_cpu_step(GameBoy *gb) {
-    // interrupts, what i remember
-    //
-    // IME - master interrupt flag
-    // ei - enables interrupts (delayed by an instruction)
-    // di - disables interrupts immedietly
-    //
-    // 0xFFFF - interrupt enable
-    //                   0        1       2      3      4
-    // lower 4 bits | Joypad | Serial | Timer | LCD | VBlank
-    // which interrupts we have enabled
-    //
-    // 0xFF0F - interrupt flag
-    //                   0        1       2      3      4
-    // lower 4 bits | Joypad | Serial | Timer | LCD | VBlank
-    // usually set by hardware though user code can manipulate this
-    //
-    // if IME & (IE & IF):// pending interrupt
-    //   service_interrupt()
-    // ...
-    //
-    // halt instructoin
-    // if pending_interrupt:
-    //   if ime: cancel
-    //   else: halt_bug?
-    // else: # no pending interrupt
-    //   halt = true
-    //
-    // coming out of halt
-    // if IE & IF: halt = false
+static u16 interrupt_addr_map[] = {0x0040, 0x0048, 0x0050, 0x0058, 0x0060};
+
+static int gb_cpu_interrupt(GameBoy *gb) {
+    gb->ime = 0;
+    int interrupt = __builtin_ctz(gb->interrupt_enable & gb->io_regs[GB_IO_IF]);
+    u16 interrupt_addr = interrupt_addr_map[interrupt];
+    gb->io_regs[GB_IO_IF] &= ~(1 << interrupt);
+
+    gb_mem_write(gb, --gb->sp, gb->pc >> 8);
+    gb_mem_write(gb, --gb->sp, gb->pc);
+
+    gb->pc = interrupt_addr;
+    return 5;
+}
+
+int gb_cpu_step(GameBoy *gb) { 
+    u8 pending_interrupts = (gb->interrupt_enable & gb->io_regs[GB_IO_IF]) != 0;
+    if (gb->halted && pending_interrupts) {
+        gb->halted = 0;
+    } else if (gb->halted) {
+        return 1;
+    }
+    
     u8 ime_delay = gb->ime_delay;
     gb->ime_delay = 0;
 
-    u8 pending_interrupts = (gb->interrupt_enable & gb->io_regs[GB_IO_IF]) != 0;
-    if (pending_interrupts) gb->halted = 0;
+    if (gb->ime & pending_interrupts) {
+        return gb_cpu_interrupt(gb);
+    }
 
-    // todo: interrupt handling...
-    
     if (ime_delay) gb->ime = 1;
-
-    if (gb->halted) return 1;
 
     u8 op = gb_mem_read(gb, gb->pc++);
     switch (op) {
