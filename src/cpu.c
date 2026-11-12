@@ -4,6 +4,11 @@
 #define GB_FLAG_H (1 << 5)
 #define GB_FLAG_C (1 << 4)
 
+#define illegal_opcode() {                                                              \
+    fprintf(stderr, "Illegal opcode encountered: 0x%02X on line %d\n", op, __LINE__);   \
+    abort();                                                                            \
+}
+
 #define todo_opcode() {                                                                     \
     fprintf(stderr, "Unimplemented opcode encountered: 0x%02X on line %d\n", op, __LINE__); \
     abort();                                                                                \
@@ -1083,7 +1088,7 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xd0: ret(!(gb->f & GB_FLAG_C));
     case 0xd1: pop_rr(de);
     case 0xd2: jp_abs(!(gb->f & GB_FLAG_C));
-    case 0xd3: todo_opcode();
+    case 0xd3: illegal_opcode();
     case 0xd4: call(!(gb->f & GB_FLAG_C));
     case 0xd5: push_rr(d, e);
     case 0xd6: sub_a(gb_mem_read(gb, gb->pc++), 2);
@@ -1098,9 +1103,9 @@ int gb_cpu_step(GameBoy *gb) {
         return 4;
     }
     case 0xda: jp_abs(gb->f & GB_FLAG_C);
-    case 0xdb: todo_opcode();
+    case 0xdb: illegal_opcode();
     case 0xdc: call(gb->f & GB_FLAG_C);
-    case 0xdd: todo_opcode();
+    case 0xdd: illegal_opcode();
     case 0xde: {
         u8 n = gb_mem_read(gb, gb->pc++);
         u8 c = (gb->f & GB_FLAG_C) >> 4;
@@ -1119,8 +1124,8 @@ int gb_cpu_step(GameBoy *gb) {
     }
     case 0xe1: pop_rr(hl);
     case 0xe2: ld_addr_a(0xff00 | gb->c);
-    case 0xe3: todo_opcode();
-    case 0xe4: todo_opcode();
+    case 0xe3: illegal_opcode();
+    case 0xe4: illegal_opcode();
     case 0xe5: push_rr(h, l);
     case 0xe6: and_a(gb_mem_read(gb, gb->pc++), 2);
     case 0xe7: rst(0x20);
@@ -1140,9 +1145,9 @@ int gb_cpu_step(GameBoy *gb) {
         gb_mem_write(gb, ((u16)hi << 8) | (u16)lo, gb->a);
         return 4;
     }
-    case 0xeb: todo_opcode();
-    case 0xec: todo_opcode();
-    case 0xed: todo_opcode();
+    case 0xeb: illegal_opcode();
+    case 0xec: illegal_opcode();
+    case 0xed: illegal_opcode();
     case 0xee: xor_a(gb_mem_read(gb, gb->pc++), 2);
     case 0xef: rst(0x28);
 
@@ -1158,7 +1163,7 @@ int gb_cpu_step(GameBoy *gb) {
     }
     case 0xf2: ld_a_addr(0xff00 | gb->c);
     case 0xf3: gb->ime = gb->ime_delay = 0; return 1;
-    case 0xf4: todo_opcode();
+    case 0xf4: illegal_opcode();
     case 0xf5: push_rr(a, f);
     case 0xf6: or_a(gb_mem_read(gb, gb->pc++), 2);
     case 0xf7: rst(0x30);
@@ -1182,8 +1187,8 @@ int gb_cpu_step(GameBoy *gb) {
         return 4;
     }
     case 0xfb: gb->ime_delay = 1; return 1;
-    case 0xfc: todo_opcode();
-    case 0xfd: todo_opcode();
+    case 0xfc: illegal_opcode();
+    case 0xfd: illegal_opcode();
     case 0xfe: cp_a(gb_mem_read(gb, gb->pc++), 2);
     case 0xff: rst(0x38);
     default: todo_opcode();
