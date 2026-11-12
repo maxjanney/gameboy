@@ -1,4 +1,3 @@
-
 #define GB_FLAG_Z (1 << 7)
 #define GB_FLAG_N (1 << 6)
 #define GB_FLAG_H (1 << 5)
