@@ -46,6 +46,12 @@ void gb_free(GameBoy *gb) {
     free(gb->rom);
     gb->rom = NULL;
 }
+#define GB_IO_SB   0x01
+#define GB_IO_SC   0x02
+#define GB_IO_DIV  0x04
+#define GB_IO_TMA  0x06
+#define GB_IO_TAC  0x07
+#define GB_IO_IF   0x0f
 
 static u8 gb_read_rom(GameBoy *gb, u16 addr) {
     return gb->rom[addr & 0x7fff];
@@ -109,6 +115,22 @@ static void gb_write_wram(GameBoy *gb, u16 addr, u8 val) {
     gb->wram[addr & 0x1fff] = val;
 }
 
+static void gb_io_write(GameBoy *gb, u16 addr, u8 val) {
+    switch (addr & 0x7f) {
+    case GB_IO_SB: gb->io_regs[GB_IO_SB] = val; break;
+    case GB_IO_SC:
+        val |= 2;
+        gb->io_regs[GB_IO_SC] = val | (~0x83);
+        if (((val & 0x80) && (val & 0x01)) && gb->serial_io) {
+            gb->serial_io(gb->io_regs[GB_IO_SB]);
+        }
+        break;
+    case GB_IO_DIV: gb->io_regs[GB_IO_DIV] = 0x00; break;
+    case GB_IO_TMA: gb->io_regs[GB_IO_TMA] = val; break;
+    case GB_IO_IF: gb->io_regs[GB_IO_IF] = val | 0xe0; break;
+    }
+}
+
 static void gb_write_high(GameBoy *gb, u16 addr, u8 val) {
     if (addr < 0xff80) {
         gb_io_write(gb, addr, val);
@@ -136,26 +158,4 @@ static MemWriteFunc mem_write_map[16] = {// 0x0000 - 0x7fff. Assuming no mbc for
 
 void gb_mem_write(GameBoy *gb, u16 addr, u8 val) {
     mem_write_map[addr >> 12](gb, addr, val);
-}
-
-#define GB_IO_SB   0x01
-#define GB_IO_SC   0x02
-#define GB_IO_DIV  0x04
-#define GB_IO_TMA  0x06
-#define GB_IO_IF   0x0f
-
-void gb_io_write(GameBoy *gb, u16 addr, u8 val) {
-    switch (addr & 0x7f) {
-    case GB_IO_SB: gb->io_regs[GB_IO_SB] = val; break;
-    case GB_IO_SC:
-        val |= 2;
-        gb->io_regs[GB_IO_SC] = val | (~0x83);
-        if (((val & 0x80) && (val & 0x01)) && gb->serial_io) {
-            gb->serial_io(gb->io_regs[GB_IO_SB]);
-        }
-        break;
-    case GB_IO_DIV: gb->io_regs[GB_IO_DIV] = 0x00; break;
-    case GB_IO_TMA: gb->io_regs[GB_IO_TMA] = val; break;
-    case GB_IO_IF: gb->io_regs[GB_IO_IF] = val | 0xe0; break;
-    }
 }

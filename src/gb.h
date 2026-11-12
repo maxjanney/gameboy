@@ -45,4 +45,3 @@ int gb_cpu_step(GameBoy *);
 
 void gb_mem_write(GameBoy *, u16, u8);
 u8 gb_mem_read(GameBoy *, u16);
-void gb_io_write(GameBoy *, u16, u8);
