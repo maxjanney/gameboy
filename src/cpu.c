@@ -732,7 +732,7 @@ static u16 interrupt_addr_map[] = {0x0040, 0x0048, 0x0050, 0x0058, 0x0060};
 
 static int gb_cpu_interrupt(GameBoy *gb) {
     gb->ime = 0;
-    int interrupt = __builtin_ctz(gb->interrupt_enable & gb->io_regs[GB_IO_IF]);
+    int interrupt = __builtin_ctz(gb->interrupt_enable & gb->io_regs[GB_IO_IF] & 0x1f);
     u16 interrupt_addr = interrupt_addr_map[interrupt];
     gb->io_regs[GB_IO_IF] &= ~(1 << interrupt);
 
@@ -744,7 +744,7 @@ static int gb_cpu_interrupt(GameBoy *gb) {
 }
 
 int gb_cpu_step(GameBoy *gb) { 
-    u8 pending_interrupts = (gb->interrupt_enable & gb->io_regs[GB_IO_IF]) != 0;
+    u8 pending_interrupts = (gb->interrupt_enable & gb->io_regs[GB_IO_IF] & 0x1f) != 0;
     if (gb->halted && pending_interrupts) {
         gb->halted = 0;
     } else if (gb->halted) {

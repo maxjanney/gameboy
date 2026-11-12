@@ -136,7 +136,7 @@ static void gb_write_io(GameBoy *gb, u16 addr, u8 val) {
 
 static void gb_write_high(GameBoy *gb, u16 addr, u8 val) {
     if (addr < 0xff80) {
-        gb_io_write(gb, addr, val);
+        gb_write_io(gb, addr, val);
     } else if (addr < 0xffff) {
         gb->hram[addr & 0x7f] = val;
     } else {
