@@ -743,7 +743,7 @@ static int gb_cpu_interrupt(GameBoy *gb) {
     return 5;
 }
 
-int gb_cpu_step(GameBoy *gb) { 
+int gb_cpu_step(GameBoy *gb) {
     u8 pending_interrupts = (gb->interrupt_enable & gb->io_regs[GB_IO_IF] & 0x1f) != 0;
     if (gb->halted && pending_interrupts) {
         gb->halted = 0;
@@ -796,7 +796,12 @@ int gb_cpu_step(GameBoy *gb) {
         return 1;
     }
 
-    case 0x10: todo_opcode();
+    case 0x10: {
+        gb->io_regs[GB_IO_DIV] = 0;
+        gb->stopped = 1;
+        gb->pc++;
+        return 1;
+    }
     case 0x11: ld_rr_u16(de);
     case 0x12: ld_addr_a(gb->de);
     case 0x13: inc_rr(de);

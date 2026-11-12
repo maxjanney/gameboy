@@ -24,6 +24,7 @@ struct GameBoy {
     u8 interrupt_enable;
 
     u8 halted;
+    u8 stopped;
 
     u8 vram[0x2000];
     u8 oam[0xa0];
