@@ -16,8 +16,6 @@ Goals for this project
 
 ## TODO
 
-Have claude review code for reading/writing to timer io registers, handling of halt, and interrupt servicing.
-
 Running gb-test-roms
 
 - cpu_instrs
@@ -32,6 +30,9 @@ Running gb-test-roms
   - [x] 10-bit ops
   - [x] 01-special
   - [ ] 02-interrupts
+    - [ ] stop instruction (resets DIV)
+    - [ ] inc DIV at 16384Hz when not stopped
+    - [ ] inc TIMA at [freq_map](gbdev.io/pandocs/Timer_and_Divider_Registers.html#ff07--tac-timer-control)[TAC & 0x03] if TAC & 0x04.
 - instr_timing
 - mem_timing
 - mem_timing2
