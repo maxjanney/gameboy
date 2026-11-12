@@ -16,7 +16,7 @@ Goals for this project
 
 ## TODO
 
-Running gb-test-roms
+Pass gb-test-roms
 
 - cpu_instrs
   - [x] 06-ld r,r
@@ -38,8 +38,7 @@ Running gb-test-roms
     - [ ] when TIMA overflows (TIMA==0 after inc), reset to value in gb->io_regs[GB_IO_TMA] and request timer interrupt (gb->io_regs[GB_IO_IF] |= (1 << 2))
     - [ ] figure out how to handle cycle counting? Then the above items are easy
 - instr_timing
+- halt_bug
 - mem_timing
 - mem_timing2
-- halt_bug
 - dmg_sound
-- oam_bug

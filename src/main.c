@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 	}
 
 	u16 prev_pc = 0;
-	while (prev_pc != gb.pc) {
+	while (prev_pc != gb.pc || gb->halted) {
 		prev_pc = gb.pc;
 		gb_cpu_step(&gb);
 	}
