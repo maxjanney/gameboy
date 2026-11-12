@@ -1,3 +1,10 @@
+#define GB_IO_SB   0x01
+#define GB_IO_SC   0x02
+#define GB_IO_DIV  0x04
+#define GB_IO_TMA  0x06
+#define GB_IO_TAC  0x07
+#define GB_IO_IF   0x0f
+
 // init gameboy to a state right after the boot rom has finished and is safe to load a rom
 // this assumes gb is zero inited or inited from a previous invocation
 void gb_init(GameBoy *gb, SerialCallback serial_io) {
@@ -10,6 +17,7 @@ void gb_init(GameBoy *gb, SerialCallback serial_io) {
     gb->l = 0x4d;
     gb->pc = 0x0100;
     gb->sp = 0xFFFE;
+    gb->io_regs[GB_IO_TAC] = 0xf8;
     gb->serial_io = serial_io;
 }
 
@@ -46,12 +54,6 @@ void gb_free(GameBoy *gb) {
     free(gb->rom);
     gb->rom = NULL;
 }
-#define GB_IO_SB   0x01
-#define GB_IO_SC   0x02
-#define GB_IO_DIV  0x04
-#define GB_IO_TMA  0x06
-#define GB_IO_TAC  0x07
-#define GB_IO_IF   0x0f
 
 static u8 gb_read_rom(GameBoy *gb, u16 addr) {
     return gb->rom[addr & 0x7fff];
@@ -115,7 +117,7 @@ static void gb_write_wram(GameBoy *gb, u16 addr, u8 val) {
     gb->wram[addr & 0x1fff] = val;
 }
 
-static void gb_io_write(GameBoy *gb, u16 addr, u8 val) {
+static void gb_write_io(GameBoy *gb, u16 addr, u8 val) {
     switch (addr & 0x7f) {
     case GB_IO_SB: gb->io_regs[GB_IO_SB] = val; break;
     case GB_IO_SC:
@@ -127,6 +129,7 @@ static void gb_io_write(GameBoy *gb, u16 addr, u8 val) {
         break;
     case GB_IO_DIV: gb->io_regs[GB_IO_DIV] = 0x00; break;
     case GB_IO_TMA: gb->io_regs[GB_IO_TMA] = val; break;
+    case GB_IO_TAC: gb->io_regs[GB_IO_TAC] = val & 0x07;
     case GB_IO_IF: gb->io_regs[GB_IO_IF] = val | 0xe0; break;
     }
 }
