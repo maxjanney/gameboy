@@ -129,7 +129,7 @@ static void gb_write_io(GameBoy *gb, u16 addr, u8 val) {
         break;
     case GB_IO_DIV: gb->io_regs[GB_IO_DIV] = 0x00; break;
     case GB_IO_TMA: gb->io_regs[GB_IO_TMA] = val; break;
-    case GB_IO_TAC: gb->io_regs[GB_IO_TAC] = val & 0x07;
+    case GB_IO_TAC: gb->io_regs[GB_IO_TAC] = val & 0x07; break;
     case GB_IO_IF: gb->io_regs[GB_IO_IF] = val | 0xe0; break;
     }
 }
