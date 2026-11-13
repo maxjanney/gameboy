@@ -1,6 +1,7 @@
 #define GB_IO_SB   0x01
 #define GB_IO_SC   0x02
 #define GB_IO_DIV  0x04
+#define GB_IO_TIMA 0x05
 #define GB_IO_TMA  0x06
 #define GB_IO_TAC  0x07
 #define GB_IO_IF   0x0f
@@ -18,6 +19,8 @@ void gb_init(GameBoy *gb, SerialCallback serial_io) {
     gb->pc = 0x0100;
     gb->sp = 0xFFFE;
     gb->io_regs[GB_IO_TAC] = 0xf8;
+    gb->io_regs[GB_IO_IF] = 0xe1;
+    gb->div_counter = 0xabcc;
     gb->serial_io = serial_io;
 }
 
@@ -72,9 +75,17 @@ static u8 gb_read_wram(GameBoy *gb, u16 addr) {
     return gb->wram[addr & 0x1fff];
 }
 
+static u8 gb_read_io(GameBoy *gb, u16 addr) {
+    u8 reg = addr & 0x7f;
+    if (reg == GB_IO_DIV)
+        return gb->div_counter >> 8;
+    else
+        return gb->io_regs[reg];
+}
+
 static u8 gb_read_high(GameBoy *gb, u16 addr) {
     if (addr < 0xff80) {
-        return gb->io_regs[addr & 0x7f];
+        return gb_read_io(gb, addr);
     } else if (addr < 0xffff) {
         return gb->hram[addr & 0x7f];
     } else {
@@ -127,9 +138,10 @@ static void gb_write_io(GameBoy *gb, u16 addr, u8 val) {
             gb->serial_io(gb->io_regs[GB_IO_SB]);
         }
         break;
-    case GB_IO_DIV: gb->io_regs[GB_IO_DIV] = 0x00; break;
+    case GB_IO_DIV: gb->div_counter = 0; break;
     case GB_IO_TMA: gb->io_regs[GB_IO_TMA] = val; break;
-    case GB_IO_TAC: gb->io_regs[GB_IO_TAC] = val & 0x07; break;
+    case GB_IO_TIMA: gb->io_regs[GB_IO_TIMA] = val; break;
+    case GB_IO_TAC: gb->io_regs[GB_IO_TAC] = val | 0xf8; break;
     case GB_IO_IF: gb->io_regs[GB_IO_IF] = val | 0xe0; break;
     }
 }
@@ -163,6 +175,24 @@ void gb_mem_write(GameBoy *gb, u16 addr, u8 val) {
     mem_write_map[addr >> 12](gb, addr, val);
 }
 
+#define GB_INT_TIMER (1 << 2)
+
 void gb_timer_tick(GameBoy *gb, int cycles) {
-    (void)gb, (void)cycles;
+    static u16 falling_bit[] = {1 << 9, 1 << 3, 1 << 5, 1 << 7};
+    while (cycles--) {
+        u16 old = gb->div_counter;
+        gb->div_counter += 1;
+
+        u8 tac = gb->io_regs[GB_IO_TAC];
+        if (!(tac & 0x04)) continue;
+
+        u16 bit = falling_bit[tac & 0x03];
+        if ((old & bit) && !(gb->div_counter & bit)) {
+            gb->io_regs[GB_IO_TIMA]++;
+            if (gb->io_regs[GB_IO_TIMA] == 0) {
+                gb->io_regs[GB_IO_TIMA] = gb->io_regs[GB_IO_TMA];
+                gb->io_regs[GB_IO_IF] |= GB_INT_TIMER;
+            }
+        }
+    }
 }

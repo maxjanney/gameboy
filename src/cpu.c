@@ -728,9 +728,9 @@ static int gb_cb_prefix(GameBoy *gb) {
     return 2;                               \
 }
 
-static u16 interrupt_addr_map[] = {0x0040, 0x0048, 0x0050, 0x0058, 0x0060};
-
 static int gb_cpu_interrupt(GameBoy *gb) {
+    static u16 interrupt_addr_map[] = {0x0040, 0x0048, 0x0050, 0x0058, 0x0060};
+
     gb->ime = 0;
     int interrupt = __builtin_ctz(gb->interrupt_enable & gb->io_regs[GB_IO_IF] & 0x1f);
     u16 interrupt_addr = interrupt_addr_map[interrupt];
@@ -797,7 +797,7 @@ static int gb_cpu_step_mcycles(GameBoy *gb) {
     }
 
     case 0x10: {
-        gb->io_regs[GB_IO_DIV] = 0;
+        gb->div_counter = 0;
         gb->stopped = 1;
         gb->pc++;
         return 1;

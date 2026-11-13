@@ -29,14 +29,7 @@ Pass gb-test-roms
   - [x] 11-op a,(hl)
   - [x] 10-bit ops
   - [x] 01-special
-  - [ ] 02-interrupts
-    - [x] stop instruction (resets DIV)
-    - [x] stop instruction 2 bytes!
-    - [ ] stop instruction stops cpu and timers
-    - [ ] inc DIV at 16384Hz when not stopped
-    - [ ] inc TIMA at [freq_map](gbdev.io/pandocs/Timer_and_Divider_Registers.html#ff07--tac-timer-control)[TAC & 0x03] if (TAC & 0x04) && (!gb->stopped)
-    - [ ] when TIMA overflows (TIMA==0 after inc), reset to value in gb->io_regs[GB_IO_TMA] and request timer interrupt (gb->io_regs[GB_IO_IF] |= (1 << 2))
-    - [ ] figure out how to handle cycle counting? Then the above items are easy
+  - [x] 02-interrupts
 - instr_timing
 - halt_bug
 - mem_timing
