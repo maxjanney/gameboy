@@ -751,13 +751,10 @@ static int gb_cpu_step_mcycles(GameBoy *gb) {
         return 1;
     }
 
+    if (gb->ime & pending_interrupts) return gb_cpu_interrupt(gb);
+
     u8 ime_delay = gb->ime_delay;
     gb->ime_delay = 0;
-
-    if (gb->ime & pending_interrupts) {
-        return gb_cpu_interrupt(gb);
-    }
-
     if (ime_delay) gb->ime = 1;
 
     u8 op = gb_mem_read(gb, gb->pc++);
