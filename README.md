@@ -19,17 +19,18 @@ Goals for this project
 Pass gb-test-roms
 
 - cpu_instrs
-  - [x] 06-ld r,r
-  - [x] 05-op rp
-  - [x] 04-op r,imm
+  - [x] 01-special
+  - [x] 02-interrupts
   - [x] 03-op sp,hl
+  - [x] 04-op r,imm
+  - [x] 05-op rp
+  - [x] 06-ld r,r
   - [x] 07-jr,jp,call,ret,rst
   - [x] 08-misc instrs
   - [x] 09-op r,r
-  - [x] 11-op a,(hl)
   - [x] 10-bit ops
-  - [x] 01-special
-  - [x] 02-interrupts
+  - [x] 11-op a,(hl)
+  - [ ] cpu_instrs.gb
 - instr_timing
 - halt_bug
 - mem_timing
