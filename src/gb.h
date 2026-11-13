@@ -26,6 +26,8 @@ struct GameBoy {
     u8 halted;
     u8 stopped;
 
+    u16 div_counter;
+
     u8 vram[0x2000];
     u8 oam[0xa0];
     u8 wram[0x2000];
@@ -46,3 +48,5 @@ int gb_cpu_step(GameBoy *);
 
 void gb_mem_write(GameBoy *, u16, u8);
 u8 gb_mem_read(GameBoy *, u16);
+
+void gb_timer_tick(GameBoy *, int);

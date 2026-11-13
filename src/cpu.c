@@ -743,14 +743,14 @@ static int gb_cpu_interrupt(GameBoy *gb) {
     return 5;
 }
 
-int gb_cpu_step(GameBoy *gb) {
+static int gb_cpu_step_mcycles(GameBoy *gb) {
     u8 pending_interrupts = (gb->interrupt_enable & gb->io_regs[GB_IO_IF] & 0x1f) != 0;
     if (gb->halted && pending_interrupts) {
         gb->halted = 0;
     } else if (gb->halted) {
         return 1;
     }
-    
+
     u8 ime_delay = gb->ime_delay;
     gb->ime_delay = 0;
 
@@ -965,8 +965,8 @@ int gb_cpu_step(GameBoy *gb) {
     case 0x75: ld_hl_r(l);
     case 0x76: {
         // before executing a halt, we should check for serviciable interrupts
-        // if there are any and IME=0 (halt bug) and if IME=1, exit and the next loop iter handles the interrupt
-        // if there are no servicable interrupts, then we enter a halted state
+        // if there are any and IME=0 (halt bug) and if IME=1, exit and the next loop iter handles
+        // the interrupt if there are no servicable interrupts, then we enter a halted state
         if ((gb->interrupt_enable & gb->io_regs[GB_IO_IF] & 0x1f) != 0) {
             gb->halted = 0;
         } else {
@@ -1187,4 +1187,8 @@ int gb_cpu_step(GameBoy *gb) {
     case 0xff: rst(0x38);
     default: todo_opcode();
     }
+}
+
+int gb_cpu_step(GameBoy *gb) {
+    return gb_cpu_step_mcycles(gb) * 4;
 }

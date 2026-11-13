@@ -162,3 +162,7 @@ static MemWriteFunc mem_write_map[16] = {// 0x0000 - 0x7fff. Assuming no mbc for
 void gb_mem_write(GameBoy *gb, u16 addr, u8 val) {
     mem_write_map[addr >> 12](gb, addr, val);
 }
+
+void gb_timer_tick(GameBoy *gb, int cycles) {
+    (void)gb, (void)cycles;
+}
