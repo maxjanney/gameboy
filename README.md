@@ -18,7 +18,7 @@ Goals for this project
 
 Pass gb-test-roms
 
-- cpu_instrs
+- [ ] cpu_instrs
   - [x] 01-special
   - [x] 02-interrupts
   - [x] 03-op sp,hl
@@ -31,8 +31,8 @@ Pass gb-test-roms
   - [x] 10-bit ops
   - [x] 11-op a,(hl)
   - [ ] cpu_instrs.gb
-- instr_timing
-- halt_bug
-- mem_timing
-- mem_timing2
-- dmg_sound
+- [x] instr_timing
+- [ ] halt_bug
+- [ ] mem_timing
+- [ ] mem_timing2
+- [ ] dmg_sound
