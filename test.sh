@@ -6,7 +6,7 @@ cd $(dirname "$0")
 
 ./build.sh
 
-tests=(
+cpu_tests=(
     "01-special.gb"
     "02-interrupts.gb"
     "03-op sp,hl.gb"
@@ -19,7 +19,9 @@ tests=(
     "10-bit ops.gb"
     "11-op a,(hl).gb"
 )
-for test in "${tests[@]}"; do
+for test in "${cpu_tests[@]}"; do
     ./build/main "gb-test-roms/cpu_instrs/individual/${test}" | sed '/^$/d' || true
     python3 -c "print('-'*40)"
 done
+
+./build/main "gb-test-roms/instr_timing/instr_timing.gb" | sed '/^$/d' || true
