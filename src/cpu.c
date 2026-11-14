@@ -552,24 +552,18 @@ static int gb_cb_prefix(GameBoy *gb) {
     return 2;           \
 }
 
-#define inc_r(r) {                          \
-    u8 h = (gb->r & 0xf) == 0xf;            \
-    gb->r += 1;                             \
-    gb->f = ((gb->r == 0) << 7) /* Z */ |   \
-            /* N = 0 */                     \
-            (h << 5) | /* H */              \
-            (gb->f & GB_FLAG_C) /* C */;    \
-    return 1;                               \
+#define inc_r(r) {                                                   \
+    u8 h = (gb->r & 0xf) == 0xf;                                     \
+    gb->r += 1;                                                      \
+    gb->f = ((gb->r == 0) << 7) | (h << 5) | (gb->f & GB_FLAG_C);    \
+    return 1;                                                        \
 }
 
-#define dec_r(r) {                          \
-    u8 h = (gb->r & 0xf) == 0;              \
-    gb->r -= 1;                             \
-    gb->f = ((gb->r == 0) << 7) /* Z */ |   \
-            GB_FLAG_N /* N = 1 */ |         \
-            (h << 5) /* H */ |              \
-            (gb->f & GB_FLAG_C) /* C */;    \
-    return 1;                               \
+#define dec_r(r) {                                                               \
+    u8 h = (gb->r & 0xf) == 0;                                                   \
+    gb->r -= 1;                                                                  \
+    gb->f = ((gb->r == 0) << 7) | GB_FLAG_N | (h << 5) | (gb->f & GB_FLAG_C);    \
+    return 1;                                                                    \
 }
 
 #define dec_rr(rr) {    \
@@ -577,53 +571,41 @@ static int gb_cb_prefix(GameBoy *gb) {
     return 2;           \
 }
 
-#define add_a(val_expr, cycles) {               \
-    u8 val = (val_expr);                        \
-    u16 res = gb->a + val;                      \
-    u8 h = (gb->a & 0xf) + (val & 0xf) > 0xf;   \
-    gb->a = (u8)res;                            \
-    gb->f = ((gb->a == 0) << 7) | /* Z */       \
-            /* N = 0 */                         \
-            (h << 5) | /* H */                  \
-            ((res > 0xff) << 4); /* C */        \
-    return (cycles);                            \
+#define add_a(val_expr, cycles) {                                    \
+    u8 val = (val_expr);                                             \
+    u16 res = gb->a + val;                                           \
+    u8 h = (gb->a & 0xf) + (val & 0xf) > 0xf;                        \
+    gb->a = (u8)res;                                                 \
+    gb->f = ((gb->a == 0) << 7) | (h << 5) | ((res > 0xff) << 4);    \
+    return (cycles);                                                 \
 }
 
-#define add_hl_rr(rr) {                                 \
-    u8 h = (gb->hl & 0xfff) + (gb->rr & 0xfff) > 0xfff; \
-    u32 res = gb->hl + gb->rr;                          \
-    u8 c = res > 0xffff;                                \
-    gb->hl = res;                                       \
-    gb->f = (gb->f & GB_FLAG_Z) /* Z */ |               \
-            /* N = 0 */                                 \
-            (h << 5) /* H */ |                          \
-            (c << 4); /* C */                           \
-    return 2;                                           \
+#define add_hl_rr(rr) {                                    \
+    u8 h = (gb->hl & 0xfff) + (gb->rr & 0xfff) > 0xfff;    \
+    u32 res = gb->hl + gb->rr;                             \
+    u8 c = res > 0xffff;                                   \
+    gb->hl = res;                                          \
+    gb->f = (gb->f & GB_FLAG_Z) | (h << 5) | (c << 4);     \
+    return 2;                                              \
 }
 
-#define adc_a(val_expr, cycles) {                       \
-    u8 val = (val_expr);                                \
-    u8 c = (gb->f & GB_FLAG_C) >> 4;                    \
-    u16 res = gb->a + val + c;                          \
-    u8 h = (gb->a & 0xf) + (val & 0xf) + c > 0xf;       \
-    gb->a = (u8)res;                                    \
-    gb->f = ((gb->a == 0) << 7) | /* Z */               \
-            /* N = 0 */                                 \
-            (h << 5) | /* H */                          \
-            ((res > 0xff) << 4); /* C */                \
-    return (cycles);                                    \
+#define adc_a(val_expr, cycles) {                                    \
+    u8 val = (val_expr);                                             \
+    u8 c = (gb->f & GB_FLAG_C) >> 4;                                 \
+    u16 res = gb->a + val + c;                                       \
+    u8 h = (gb->a & 0xf) + (val & 0xf) + c > 0xf;                    \
+    gb->a = (u8)res;                                                 \
+    gb->f = ((gb->a == 0) << 7) | (h << 5) | ((res > 0xff) << 4);    \
+    return (cycles);                                                 \
 }
 
-#define sub_a(val_expr, cycles) {                       \
-    u8 val = (val_expr);                                \
-    u8 c = val > gb->a;                                 \
-    u8 h = (((gb->a & 0xf) - (val & 0xf)) & 0x10) != 0; \
-    gb->a -= val;                                       \
-    gb->f = ((gb->a == 0) << 7) | /* Z */               \
-            GB_FLAG_N | /* N = 1 */                     \
-            (h << 5) | /* H */                          \
-            (c << 4); /* C */                           \
-    return (cycles);                                    \
+#define sub_a(val_expr, cycles) {                                     \
+    u8 val = (val_expr);                                              \
+    u8 c = val > gb->a;                                               \
+    u8 h = (((gb->a & 0xf) - (val & 0xf)) & 0x10) != 0;               \
+    gb->a -= val;                                                     \
+    gb->f = ((gb->a == 0) << 7) | GB_FLAG_N | (h << 5) | (c << 4);    \
+    return (cycles);                                                  \
 }
 
 #define sbc_a(val_expr, cycles) {                                       \
@@ -654,15 +636,12 @@ static int gb_cb_prefix(GameBoy *gb) {
     return (cycles);                \
 }
 
-#define cp_a(val_expr, cycles) {                        \
-    u8 val = (val_expr);                                \
-    u8 c = val > gb->a;                                 \
-    u8 h = (((gb->a & 0xf) - (val & 0xf)) & 0x10) != 0; \
-    gb->f = ((gb->a == val) << 7) | /* Z */             \
-            GB_FLAG_N | /* N = 1 */                     \
-            (h << 5) | /* H */                          \
-            (c << 4); /* C */                           \
-    return (cycles);                                    \
+#define cp_a(val_expr, cycles) {                                        \
+    u8 val = (val_expr);                                                \
+    u8 c = val > gb->a;                                                 \
+    u8 h = (((gb->a & 0xf) - (val & 0xf)) & 0x10) != 0;                 \
+    gb->f = ((gb->a == val) << 7) | GB_FLAG_N | (h << 5) | (c << 4);    \
+    return (cycles);                                                    \
 }
 
 #define jr_rel(cond) {                          \
