@@ -175,7 +175,11 @@ void gb_mem_write(GameBoy *gb, u16 addr, u8 val) {
     mem_write_map[addr >> 12](gb, addr, val);
 }
 
-#define GB_INT_TIMER (1 << 2)
+#define GB_INT_VBLANK   (1 << 0)
+#define GB_INT_LCD      (1 << 1)
+#define GB_INT_TIMER    (1 << 2)
+#define GB_INT_SERIAL   (1 << 3)
+#define GB_INT_JOYPAD   (1 << 4)
 
 void gb_timer_tick(GameBoy *gb, int cycles) {
     static u16 falling_bit[] = {1 << 9, 1 << 3, 1 << 5, 1 << 7};
