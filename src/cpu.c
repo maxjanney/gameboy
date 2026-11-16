@@ -715,6 +715,10 @@ static int gb_cpu_interrupt(GameBoy *gb) {
     u16 interrupt_addr = interrupt_addr_map[interrupt];
     gb->io_regs[GB_IO_IF] &= ~(1 << interrupt);
 
+    if (gb->halt_bug) {
+        gb->halt_bug = 0;
+        gb->pc -= 1;
+    }
     gb_mem_write(gb, --gb->sp, gb->pc >> 8);
     gb_mem_write(gb, --gb->sp, gb->pc);
 
@@ -736,7 +740,13 @@ static int gb_cpu_step_mcycles(GameBoy *gb) {
     gb->ime_delay = 0;
     if (ime_delay) gb->ime = 1;
 
-    u8 op = gb_mem_read(gb, gb->pc++);
+    u8 op = gb_mem_read(gb, gb->pc);
+    if (gb->halt_bug) {
+        gb->halt_bug = 0;
+    } else {
+        gb->pc += 1;
+    }
+
     switch (op) {
     case 0x00: return 1;
     case 0x01: ld_rr_u16(bc);
@@ -940,10 +950,8 @@ static int gb_cpu_step_mcycles(GameBoy *gb) {
     case 0x74: ld_hl_r(h);
     case 0x75: ld_hl_r(l);
     case 0x76: {
-        // before executing a halt, we should check for serviciable interrupts
-        // if there are any and IME=0 (halt bug) and if IME=1, exit and the next loop iter handles
-        // the interrupt if there are no servicable interrupts, then we enter a halted state
         if ((gb->interrupt_enable & gb->io_regs[GB_IO_IF] & 0x1f) != 0) {
+            if (gb->ime) gb->halt_bug = 1;
             gb->halted = 0;
         } else {
             gb->halted = 1;
