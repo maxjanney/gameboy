@@ -59,8 +59,6 @@ void run_ram_test() {
             (status != 0x80)) {
             success = status == 0;
             break;
-        } else {
-            printf("Not done after frame %d\n", frame);
         }
     }
 
