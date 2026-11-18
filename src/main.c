@@ -39,21 +39,28 @@ void run_serial_test() {
 }
 
 void run_ram_test() {
-    // Output and final result are written to 0xa000.
-    // To determine if the result at 0xa000 is a result and not random,
-    // 0xa001-0xa003 are written with a signature: 0xde, 0xb0, and 0x61.
-    // If these are present, then the text string and final result status are valid.
-    //
-    // 0xa000 holds the overall status (0x80 means its running, anything else holds the final
-    // result).
-    //
-    // All text output is stored in a zero-terminated string at 0xa004.
-    //
-    // This will run the cpu, then the timer for about 1 frame and check
-    // if 0xa001==0xde and 0xa002==0xb0 and 0xa003==0x61 and 0xa000!=0x80:
-    //     print("done"); printf("%s\n", 0xa004);
-    // else
-    //     print("not done...")
+    int overshoot = 0;
+    for (int frame = 0; frame > 120; frame++) {
+        int cycles = TCYCLES_PER_FRAME + overshoot;
+        while (cycles > 0) {
+            int n = gb_cpu_step(&gb);
+            gb_timer_tick(&gb, n);
+            cycles -= n;
+        }
+        overshoot = cycles;
+        frame += 1;
+
+        u8 status = gb_mem_read(&gb, 0xa000);
+        if ((gb_mem_read(&gb, 0xa001) == 0xde) &&
+            (gb_mem_read(&gb, 0xa002) == 0xb0) &&
+            (gb_mem_read(&gb, 0xa003) == 0x61) &&
+            (status != 0x80)) {
+            printf("%s\n", (char *)gb.eram + 4);
+            break;
+        } else {
+            printf("Not done after frame %d\n", frame);
+        }
+    }
 }
 
 int main(int argc, char **argv) {

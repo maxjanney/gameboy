@@ -951,7 +951,7 @@ static int gb_cpu_step_mcycles(GameBoy *gb) {
     case 0x75: ld_hl_r(l);
     case 0x76: {
         if ((gb->interrupt_enable & gb->io_regs[GB_IO_IF] & 0x1f) != 0) {
-            if (gb->ime) gb->halt_bug = 1;
+            if (!gb->ime) gb->halt_bug = 1;
             gb->halted = 0;
         } else {
             gb->halted = 1;

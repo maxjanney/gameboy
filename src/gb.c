@@ -67,8 +67,7 @@ static u8 gb_read_vram(GameBoy *gb, u16 addr) {
 }
 
 static u8 gb_read_eram(GameBoy *gb, u16 addr) {
-    (void)gb, (void)addr;
-    return 0xff;
+    return gb->eram[addr & 0x1fff];
 }
 
 static u8 gb_read_wram(GameBoy *gb, u16 addr) {
@@ -121,7 +120,7 @@ static void gb_write_vram(GameBoy *gb, u16 addr, u8 val) {
 }
 
 static void gb_write_eram(GameBoy *gb, u16 addr, u8 val) {
-    (void)gb, (void)addr, (void)val;
+    gb->eram[addr & 0x1fff] = val;
 }
 
 static void gb_write_wram(GameBoy *gb, u16 addr, u8 val) {
