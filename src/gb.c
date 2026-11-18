@@ -58,23 +58,23 @@ void gb_free(GameBoy *gb) {
     gb->rom = NULL;
 }
 
-static u8 gb_read_rom(GameBoy *gb, u16 addr) {
+internal u8 gb_read_rom(GameBoy *gb, u16 addr) {
     return gb->rom[addr & 0x7fff];
 }
 
-static u8 gb_read_vram(GameBoy *gb, u16 addr) {
+internal u8 gb_read_vram(GameBoy *gb, u16 addr) {
     return gb->vram[addr & 0x1fff];
 }
 
-static u8 gb_read_eram(GameBoy *gb, u16 addr) {
+internal u8 gb_read_eram(GameBoy *gb, u16 addr) {
     return gb->eram[addr & 0x1fff];
 }
 
-static u8 gb_read_wram(GameBoy *gb, u16 addr) {
+internal u8 gb_read_wram(GameBoy *gb, u16 addr) {
     return gb->wram[addr & 0x1fff];
 }
 
-static u8 gb_read_io(GameBoy *gb, u16 addr) {
+internal u8 gb_read_io(GameBoy *gb, u16 addr) {
     u8 reg = addr & 0x7f;
     if (reg == GB_IO_DIV)
         return gb->div_counter >> 8;
@@ -82,7 +82,7 @@ static u8 gb_read_io(GameBoy *gb, u16 addr) {
         return gb->io_regs[reg];
 }
 
-static u8 gb_read_high(GameBoy *gb, u16 addr) {
+internal u8 gb_read_high(GameBoy *gb, u16 addr) {
     if (addr < 0xff80) {
         return gb_read_io(gb, addr);
     } else if (addr < 0xffff) {
@@ -111,23 +111,23 @@ u8 gb_mem_read(GameBoy *gb, u16 addr) {
     return mem_read_map[addr >> 12](gb, addr);
 }
 
-static void gb_write_rom(GameBoy *gb, u16 addr, u8 val) {
+internal void gb_write_rom(GameBoy *gb, u16 addr, u8 val) {
     (void)gb, (void)addr, (void)val;
 }
 
-static void gb_write_vram(GameBoy *gb, u16 addr, u8 val) {
+internal void gb_write_vram(GameBoy *gb, u16 addr, u8 val) {
     gb->vram[addr & 0x1fff] = val;
 }
 
-static void gb_write_eram(GameBoy *gb, u16 addr, u8 val) {
+internal void gb_write_eram(GameBoy *gb, u16 addr, u8 val) {
     gb->eram[addr & 0x1fff] = val;
 }
 
-static void gb_write_wram(GameBoy *gb, u16 addr, u8 val) {
+internal void gb_write_wram(GameBoy *gb, u16 addr, u8 val) {
     gb->wram[addr & 0x1fff] = val;
 }
 
-static void gb_write_io(GameBoy *gb, u16 addr, u8 val) {
+internal void gb_write_io(GameBoy *gb, u16 addr, u8 val) {
     switch (addr & 0x7f) {
     case GB_IO_SB: gb->io_regs[GB_IO_SB] = val; break;
     case GB_IO_SC:
@@ -145,7 +145,7 @@ static void gb_write_io(GameBoy *gb, u16 addr, u8 val) {
     }
 }
 
-static void gb_write_high(GameBoy *gb, u16 addr, u8 val) {
+internal void gb_write_high(GameBoy *gb, u16 addr, u8 val) {
     if (addr < 0xff80) {
         gb_write_io(gb, addr, val);
     } else if (addr < 0xffff) {
@@ -196,6 +196,19 @@ void gb_timer_tick(GameBoy *gb, int cycles) {
                 gb->io_regs[GB_IO_TIMA] = gb->io_regs[GB_IO_TMA];
                 gb->io_regs[GB_IO_IF] |= GB_INT_TIMER;
             }
+        }
+    }
+}
+
+void gb_ppu_tick(GameBoy *gb, int cycles) {
+    // halt bug test needs vblank interrupt working...
+    // The PPU writes one dot (pixel) in 1 t-cycle.
+    // One line is 456 dots and we need to draw 144 lines before entering vblank.
+    // So after 456 * 144 dots, we can enable the vblank interrupt.
+    while (cycles--) {
+        gb->ppu_ticks = (gb->ppu_ticks + 1) % TCYCLES_PER_FRAME;
+        if (gb->ppu_ticks == 456 * 144) {
+            gb->io_regs[GB_IO_IF] |= GB_INT_VBLANK;
         }
     }
 }

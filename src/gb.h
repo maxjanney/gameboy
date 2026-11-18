@@ -1,3 +1,5 @@
+#define TCYCLES_PER_FRAME 70224
+
 typedef void (*SerialCallback)(u8);
 
 typedef struct GameBoy GameBoy;
@@ -36,6 +38,8 @@ struct GameBoy {
     u8 wram[0x2000];
     u8 hram[0x7f];
 
+    u32 ppu_ticks;
+
     u8 *rom;
     size_t rom_len;
 
@@ -53,3 +57,4 @@ void gb_mem_write(GameBoy *, u16, u8);
 u8 gb_mem_read(GameBoy *, u16);
 
 void gb_timer_tick(GameBoy *, int);
+void gb_ppu_tick(GameBoy *, int);

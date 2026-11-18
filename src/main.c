@@ -5,7 +5,6 @@
 #include "cpu.c"
 
 #define OUTPUT_SIZE 1024
-#define TCYCLES_PER_FRAME 70224
 #define FRAME_TIMEOUT 120
 
 typedef enum TestType TestType;
@@ -48,6 +47,7 @@ void run_ram_test() {
         while (cycles > 0) {
             int n = gb_cpu_step(&gb);
             gb_timer_tick(&gb, n);
+            gb_ppu_tick(&gb, n);
             cycles -= n;
         }
         overshoot = cycles;

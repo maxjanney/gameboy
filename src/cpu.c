@@ -84,7 +84,7 @@
     return 2;           \
 }
 
-static int gb_cb_prefix(GameBoy *gb) {
+internal int gb_cb_prefix(GameBoy *gb) {
     u8 op = gb_mem_read(gb, gb->pc++);
     switch (op) {
     case 0x00: rlc_r(b);
@@ -707,7 +707,7 @@ static int gb_cb_prefix(GameBoy *gb) {
     return 2;                               \
 }
 
-static int gb_cpu_interrupt(GameBoy *gb) {
+internal int gb_cpu_interrupt(GameBoy *gb) {
     static u16 interrupt_addr_map[] = {0x0040, 0x0048, 0x0050, 0x0058, 0x0060};
 
     gb->ime = 0;
@@ -726,7 +726,7 @@ static int gb_cpu_interrupt(GameBoy *gb) {
     return 5;
 }
 
-static int gb_cpu_step_mcycles(GameBoy *gb) {
+internal int gb_cpu_step_mcycles(GameBoy *gb) {
     u8 pending_interrupts = (gb->interrupt_enable & gb->io_regs[GB_IO_IF] & 0x1f) != 0;
     if (gb->halted && pending_interrupts) {
         gb->halted = 0;
