@@ -32,10 +32,7 @@ Pass gb-test-roms
   - [x] 11-op a,(hl)
   - [ ] cpu_instrs.gb
 - [x] instr_timing
-- [ ] halt_bug
-  - [ ] display test results from cart. RAM 
-  - [ ] add a 8KB buffer for cart_ram
-  - [ ] impl the read/write functions for cart_ram
+- [x] halt_bug
 - [ ] mem_timing
 - [ ] mem_timing2
 - [ ] dmg_sound
