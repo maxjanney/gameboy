@@ -25,3 +25,5 @@ for test in "${cpu_tests[@]}"; do
 done
 
 ./build/main "gb-test-roms/instr_timing/instr_timing.gb" | sed '/^$/d' || true
+
+./build/main "gb-test-roms/halt_bug.gb"
