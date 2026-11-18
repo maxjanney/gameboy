@@ -6,6 +6,7 @@
 
 #define OUTPUT_SIZE 1024
 #define TCYCLES_PER_FRAME 70224
+#define FRAME_TIMEOUT 120
 
 typedef enum TestType TestType;
 enum TestType {
@@ -40,7 +41,9 @@ void run_serial_test() {
 
 void run_ram_test() {
     int overshoot = 0;
-    for (int frame = 0; frame > 120; frame++) {
+    int success = 0;
+    int frame;
+    for (frame = 0; frame < FRAME_TIMEOUT; frame++) {
         int cycles = TCYCLES_PER_FRAME + overshoot;
         while (cycles > 0) {
             int n = gb_cpu_step(&gb);
@@ -48,19 +51,21 @@ void run_ram_test() {
             cycles -= n;
         }
         overshoot = cycles;
-        frame += 1;
 
         u8 status = gb_mem_read(&gb, 0xa000);
         if ((gb_mem_read(&gb, 0xa001) == 0xde) &&
             (gb_mem_read(&gb, 0xa002) == 0xb0) &&
             (gb_mem_read(&gb, 0xa003) == 0x61) &&
             (status != 0x80)) {
-            printf("%s\n", (char *)gb.eram + 4);
+            success = status == 0;
             break;
         } else {
             printf("Not done after frame %d\n", frame);
         }
     }
+
+    char *msg = frame == FRAME_TIMEOUT ? "frame timeout reached" : (char *)gb.eram + 4;
+    printf("%s:\n%s\n", success ? "Passed" : "Failed", msg);
 }
 
 int main(int argc, char **argv) {
