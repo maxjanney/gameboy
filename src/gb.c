@@ -22,6 +22,7 @@ void gb_init(GameBoy *gb, SerialCallback serial_io) {
     gb->io_regs[GB_IO_IF] = 0xe1;
     gb->div_counter = 0xabcc;
     gb->serial_io = serial_io;
+    gb->rom_bank = 1;
 }
 
 int gb_load_rom(GameBoy *gb, const char *path) {
@@ -120,7 +121,15 @@ internal void gb_mbc_write_rom(GameBoy *gb, u16 addr, u8 val) {
         case 2: gb->mbc1.ram_bank = val; break;             // 4000-5fff
         case 3: gb->mbc1.mode = val; break;                 // 6000-7fff
         }
-        // todo: calculate rom bank we'd use to index for reads
+
+        // todo: banking mode
+        // when it is 0 or 1 - the 2 ram_bank bits apply
+        //     - 0: 0000-3fff is bank 0 and a000-bfff is locked at 0
+        //     - 1: allow for bank switching.
+        gb->rom_bank = ((gb->mbc1.ram_bank) << 5) | (gb->mbc1.rom_bank);
+        if ((gb->rom_bank & 0x1f) == 0) {
+            gb->rom_bank += 1;
+        }
     }
     }
 }

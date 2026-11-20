@@ -44,11 +44,14 @@ struct GameBoy {
     MBCType mbc_ty;
     union {
         struct {
+            // low 5 bits
             unsigned int rom_bank : 5;
+            // high 2 bits
             unsigned int ram_bank : 2;
             unsigned int mode : 1;
         } mbc1;
     };
+    size_t rom_bank;
     bool32 ram_enable;
 
     u8 vram[0x2000];
