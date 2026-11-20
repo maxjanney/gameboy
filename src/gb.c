@@ -111,8 +111,18 @@ u8 gb_mem_read(GameBoy *gb, u16 addr) {
     return mem_read_map[addr >> 12](gb, addr);
 }
 
-internal void gb_write_rom(GameBoy *gb, u16 addr, u8 val) {
-    (void)gb, (void)addr, (void)val;
+internal void gb_mbc_write_rom(GameBoy *gb, u16 addr, u8 val) {
+    switch (gb->mbc_ty) {
+    case MBC_1: {
+        switch (addr >> 13) {
+        case 0: gb->ram_enable = (val & 0xf) == 0xa; break; // 0000-1fff
+        case 1: gb->mbc1.rom_bank = val; break;             // 2000-3fff
+        case 2: gb->mbc1.ram_bank = val; break;             // 4000-5fff
+        case 3: gb->mbc1.mode = val; break;                 // 6000-7fff
+        }
+        // todo: calculate rom bank we'd use to index for reads
+    }
+    }
 }
 
 internal void gb_write_vram(GameBoy *gb, u16 addr, u8 val) {
@@ -156,9 +166,10 @@ internal void gb_write_high(GameBoy *gb, u16 addr, u8 val) {
 }
 
 typedef void (*MemWriteFunc)(GameBoy *gb, u16, u8);
-static MemWriteFunc mem_write_map[16] = {// 0x0000 - 0x7fff. Assuming no mbc for now
-                                         gb_write_rom, gb_write_rom, gb_write_rom, gb_write_rom,
-                                         gb_write_rom, gb_write_rom, gb_write_rom, gb_write_rom,
+static MemWriteFunc mem_write_map[16] = {// 0x0000 - 0x7fff
+                                         gb_mbc_write_rom, gb_mbc_write_rom, gb_mbc_write_rom,
+                                         gb_mbc_write_rom, gb_mbc_write_rom, gb_mbc_write_rom,
+                                         gb_mbc_write_rom, gb_mbc_write_rom,
                                          // 0x8000 - 0x9fff
                                          gb_write_vram, gb_write_vram,
                                          // 0xa000 - 0xbfff. Skipping for now

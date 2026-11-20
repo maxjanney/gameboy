@@ -14,7 +14,7 @@ https://gbdev.io/pandocs/The_Cartridge_Header.html#0149--ram-size
 
 # MBC1
 
-Thinking of having the mbc be a union of mbc1/3/5 structs.
+Thinking of having the mbc be a union of mbc1/3/5 structs. Along side this union we can have which type it is.
 
 ## RAM
 
@@ -24,7 +24,7 @@ Supports up to 32 KiB of banked RAM. The control registers are mapped to writes 
 
 RAM Enable - mapped to 0000-1fff (write only). Any value with $A in the lower 4 bits enables the RAM attached to the MBC, and any other value disables the RAM. This can be a flag on the GB struct.
 
-RAM Bank No - 4000-5fff (write only). 2-bit register for the RAM bank. Or to specify the upper two bits (bits 5-6) of the ROM Bank number.
+RAM Bank No - 4000-5fff (write only). 2-bit register for the RAM bank. Or to specify the upper two bits (bits 5-6) of the ROM Bank number. This can be computed at the time we write so reading from mbc is cleaner.
 
 Banking Mode Select - 6000–7FFF, 1-bit register selects the two mbc1 banking modes.
 Mode 0: default, 0000-3fff is rom bank 0. a000-bfff are locked to ram bank 0.

@@ -2,6 +2,14 @@
 
 typedef void (*SerialCallback)(u8);
 
+typedef enum MBCType MBCType;
+enum MBCType {
+    MBC_NONE,
+    MBC_1,
+    MBC_3,
+    MBC_5,
+};
+
 typedef struct GameBoy GameBoy;
 struct GameBoy {
     union {
@@ -31,6 +39,17 @@ struct GameBoy {
     u16 div_counter;
 
     u8 halt_bug;
+
+    // todo: parse from header
+    MBCType mbc_ty;
+    union {
+        struct {
+            unsigned int rom_bank : 5;
+            unsigned int ram_bank : 2;
+            unsigned int mode : 1;
+        } mbc1;
+    };
+    bool32 ram_enable;
 
     u8 vram[0x2000];
     u8 eram[0x2000];
