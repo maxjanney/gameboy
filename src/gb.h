@@ -40,7 +40,6 @@ struct GameBoy {
 
     u8 halt_bug;
 
-    // todo: parse from header
     MBCType mbc_ty;
     union {
         struct {
@@ -55,7 +54,10 @@ struct GameBoy {
     bool32 ram_enable;
 
     u8 vram[0x2000];
-    u8 eram[0x2000];
+    u8 eram[0x20000];
+    // todo: real size, from header rounded to next  power of 2
+    size_t eram_len;
+
     u8 oam[0xa0];
     u8 wram[0x2000];
     u8 hram[0x7f];

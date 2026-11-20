@@ -825,9 +825,7 @@ internal int gb_cpu_step_mcycles(GameBoy *gb) {
         u8 offset = 0;
         u8 carry = 0;
         u8 add = !(gb->f & GB_FLAG_N);
-        if ((add && ((gb->a & 0xf) > 0x9)) || (gb->f & GB_FLAG_H)) {
-            offset |= 0x06;
-        }
+        if ((add && ((gb->a & 0xf) > 0x9)) || (gb->f & GB_FLAG_H)) offset |= 0x06;
 
         if ((add && (gb->a > 0x99)) || (gb->f & GB_FLAG_C)) {
             offset |= 0x60;

@@ -25,6 +25,33 @@ void gb_init(GameBoy *gb, SerialCallback serial_io) {
     gb->rom_bank = 1;
 }
 
+typedef struct CartridgeType CartridgeType;
+struct CartridgeType {
+    MBCType mbc_ty;
+    bool32 has_ram;
+    // probably won't impl each
+    bool32 has_battery;
+    bool32 has_timer;
+    bool32 has_rumble;
+};
+
+static CartridgeType cartridge_types[0x100] = {
+    [0x1] = {.mbc_ty = MBC_1},
+    {.mbc_ty = MBC_1, .has_ram = 1},
+    {.mbc_ty = MBC_1, .has_ram = 1, .has_battery = 1},
+    [0xf] = {.mbc_ty = MBC_3, .has_battery = 1, .has_timer = 1},
+    {.mbc_ty = MBC_3, .has_timer = 1, .has_ram = 1, .has_battery = 1},
+    {.mbc_ty = MBC_3},
+    {.mbc_ty = MBC_3, .has_ram = 1},
+    {.mbc_ty = MBC_3, .has_ram = 1, .has_battery = 1},
+    [0x19] = {.mbc_ty = MBC_5},
+    {.mbc_ty = MBC_5, .has_ram = 1},
+    {.mbc_ty = MBC_5, .has_ram = 1, .has_battery = 1},
+    {.mbc_ty = MBC_5, .has_rumble = 1},
+    {.mbc_ty = MBC_5, .has_ram = 1, .has_rumble = 1},
+    {.mbc_ty = MBC_5, .has_ram = 1, .has_rumble = 1, .has_battery = 1},
+};
+
 int gb_load_rom(GameBoy *gb, const char *path) {
     FILE *f = fopen(path, "rb");
     if (!f) return 1;
@@ -42,6 +69,9 @@ int gb_load_rom(GameBoy *gb, const char *path) {
 
     size_t nread = fread(gb->rom, 1, n, f);
     if (!nread && ferror(f)) goto free_rom;
+
+    CartridgeType *cart_ty = &cartridge_types[gb->rom[0x0147]];
+    gb->mbc_ty = cart_ty->mbc_ty;
 
     fclose(f);
     return 0;
@@ -63,12 +93,19 @@ internal u8 gb_read_rom(GameBoy *gb, u16 addr) {
     return gb->rom[addr & 0x7fff];
 }
 
+internal u8 gb_mbc_read_rom(GameBoy *gb, u16 addr) {
+    size_t eff_addr = (addr & 0x3fff) + 0x4000 * gb->rom_bank;
+    return gb->rom[eff_addr & (gb->rom_len - 1)];
+}
+
 internal u8 gb_read_vram(GameBoy *gb, u16 addr) {
     return gb->vram[addr & 0x1fff];
 }
 
 internal u8 gb_read_eram(GameBoy *gb, u16 addr) {
-    return gb->eram[addr & 0x1fff];
+    if (!gb->ram_enable) return 0xff;
+    size_t eff_addr = (addr & 0x1fff) + gb->mbc1.ram_bank * 0x2000;
+    return gb->eram[eff_addr & (gb->eram_len - 1)];
 }
 
 internal u8 gb_read_wram(GameBoy *gb, u16 addr) {
@@ -77,10 +114,11 @@ internal u8 gb_read_wram(GameBoy *gb, u16 addr) {
 
 internal u8 gb_read_io(GameBoy *gb, u16 addr) {
     u8 reg = addr & 0x7f;
-    if (reg == GB_IO_DIV)
+    if (reg == GB_IO_DIV) {
         return gb->div_counter >> 8;
-    else
+    } else {
         return gb->io_regs[reg];
+    }
 }
 
 internal u8 gb_read_high(GameBoy *gb, u16 addr) {
@@ -94,9 +132,11 @@ internal u8 gb_read_high(GameBoy *gb, u16 addr) {
 }
 
 typedef u8 (*MemReadFunc)(GameBoy *, u16);
-static MemReadFunc mem_read_map[16] = {// 0x0000 - 0x7fff. Assuming no mbc for now
+static MemReadFunc mem_read_map[16] = {// 0x0000 - 0x3fff
                                        gb_read_rom, gb_read_rom, gb_read_rom, gb_read_rom,
-                                       gb_read_rom, gb_read_rom, gb_read_rom, gb_read_rom,
+                                       // 0x4000 - 0x7fff
+                                       gb_mbc_read_rom, gb_mbc_read_rom, gb_mbc_read_rom,
+                                       gb_mbc_read_rom,
                                        // 0x8000 - 0x9fff
                                        gb_read_vram, gb_read_vram,
                                        // 0xa000 - 0xbfff. Skipping for now
@@ -127,9 +167,7 @@ internal void gb_mbc_write_rom(GameBoy *gb, u16 addr, u8 val) {
         //     - 0: 0000-3fff is bank 0 and a000-bfff is locked at 0
         //     - 1: allow for bank switching.
         gb->rom_bank = ((gb->mbc1.ram_bank) << 5) | (gb->mbc1.rom_bank);
-        if ((gb->rom_bank & 0x1f) == 0) {
-            gb->rom_bank += 1;
-        }
+        if ((gb->rom_bank & 0x1f) == 0) gb->rom_bank += 1;
     }
     }
 }
@@ -139,6 +177,7 @@ internal void gb_write_vram(GameBoy *gb, u16 addr, u8 val) {
 }
 
 internal void gb_write_eram(GameBoy *gb, u16 addr, u8 val) {
+    // todo: mbc1, ram enable, mapping to index
     gb->eram[addr & 0x1fff] = val;
 }
 
@@ -152,9 +191,7 @@ internal void gb_write_io(GameBoy *gb, u16 addr, u8 val) {
     case GB_IO_SC:
         val |= 2;
         gb->io_regs[GB_IO_SC] = val | (~0x83);
-        if (((val & 0x80) && (val & 0x01)) && gb->serial_io) {
-            gb->serial_io(gb->io_regs[GB_IO_SB]);
-        }
+        if (((val & 0x80) && (val & 0x01)) && gb->serial_io) gb->serial_io(gb->io_regs[GB_IO_SB]);
         break;
     case GB_IO_DIV: gb->div_counter = 0; break;
     case GB_IO_TMA: gb->io_regs[GB_IO_TMA] = val; break;
@@ -227,8 +264,6 @@ void gb_ppu_tick(GameBoy *gb, int cycles) {
     // So after 456 * 144 dots, we can enable the vblank interrupt.
     while (cycles--) {
         gb->ppu_ticks = (gb->ppu_ticks + 1) % TCYCLES_PER_FRAME;
-        if (gb->ppu_ticks == 456 * 144) {
-            gb->io_regs[GB_IO_IF] |= GB_INT_VBLANK;
-        }
+        if (gb->ppu_ticks == 456 * 144) gb->io_regs[GB_IO_IF] |= GB_INT_VBLANK;
     }
 }
