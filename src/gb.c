@@ -177,7 +177,6 @@ internal void gb_write_vram(GameBoy *gb, u16 addr, u8 val) {
 }
 
 internal void gb_write_eram(GameBoy *gb, u16 addr, u8 val) {
-    // todo: mbc1, ram enable, mapping to index
     gb->eram[addr & 0x1fff] = val;
 }
 

@@ -36,3 +36,12 @@ Pass gb-test-roms
 - [ ] mem_timing
 - [ ] mem_timing2
 - [ ] dmg_sound
+
+Memory Bank Controllers
+
+- [ ] mbc1
+  - [ ] possibly fix mask in gb_read_rom
+  - [ ] properly set cart ram/rom size to a power of 2
+  - [ ] handle banking mode/understand a little bit better
+  - [ ] writing to eram (ram enable flag)
+  - [ ] update banking in gb_mbc_write_rom
